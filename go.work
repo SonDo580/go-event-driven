@@ -4,5 +4,6 @@ toolchain go1.24.4
 
 use (
 	./02-async/01-goroutines
+	./03-message-broker/02-publishing-messages
 	./project
 )
