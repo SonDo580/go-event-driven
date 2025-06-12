@@ -9,7 +9,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/labstack/echo/v4"
 	"github.com/redis/go-redis/v9"
-	"golang.org/x/exp/slog"
+	"golang.org/x/sync/errgroup"
 
 	ticketsHttp "tickets/http"
 	ticketsMsg "tickets/message"
@@ -37,16 +37,27 @@ func New(
 }
 
 func (s Service) Run(ctx context.Context) error {
-	go func() {
-		err := s.watermillRouter.Run(ctx)
-		if err != nil {
-			slog.With("error", err).Error("Failed to run watermill router")
-		}
-	}()
+	errGrp, ctx := errgroup.WithContext(ctx)
 
-	err := s.echoRouter.Start(":8080")
-	if err != nil && !errors.Is(err, stdHTTP.ErrServerClosed) {
-		return err
-	}
-	return nil
+	errGrp.Go(func() error {
+		return s.watermillRouter.Run(ctx)
+	})
+
+	errGrp.Go(func() error {
+		// Start the HTTP server after watermill router is ready
+		<-s.watermillRouter.Running()
+
+		err := s.echoRouter.Start(":8080")
+		if err != nil && !errors.Is(err, stdHTTP.ErrServerClosed) {
+			return err
+		}
+		return nil
+	})
+
+	errGrp.Go(func() error {
+		<-ctx.Done()
+		return s.echoRouter.Shutdown(ctx)
+	})
+
+	return errGrp.Wait()
 }
