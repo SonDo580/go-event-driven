@@ -2,6 +2,9 @@ package message
 
 import (
 	"context"
+	"encoding/json"
+	"log/slog"
+	"tickets/entities"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -42,8 +45,24 @@ func NewWatermillRouter(
 		TopicAppendToTracker,
 		appendToTrackerSubscriber,
 		func(msg *message.Message) error {
-			ticketID := string(msg.Payload)
-			return spreadsheetsAPI.AppendRow(msg.Context(), SheetName, []string{ticketID})
+			var payload entities.AppendToTrackerPayload
+			err := json.Unmarshal(msg.Payload, &payload)
+			if err != nil {
+				return err
+			}
+
+			slog.Info("Appending ticket to tracker")
+
+			return spreadsheetsAPI.AppendRow(
+				msg.Context(),
+				SheetName,
+				[]string{
+					payload.TicketID,
+					payload.CustomerEmail,
+					payload.Price.Amount,
+					payload.Price.Currency,
+				},
+			)
 		},
 	)
 
