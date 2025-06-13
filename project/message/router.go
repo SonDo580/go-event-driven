@@ -1,80 +1,55 @@
 package message
 
 import (
-	"context"
 	"encoding/json"
-	"log/slog"
 	"tickets/entities"
+	"tickets/message/event"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/redis/go-redis/v9"
 )
 
-type SpreadsheetsAPI interface {
-	AppendRow(ctx context.Context, sheetName string, row []string) error
-}
-
-type ReceiptsService interface {
-	IssueReceipt(ctx context.Context, request entities.IssueReceiptRequest) error
-}
-
 func NewWatermillRouter(
-	receiptsService ReceiptsService,
-	spreadsheetsAPI SpreadsheetsAPI,
+	receiptsService event.ReceiptsService,
+	spreadsheetsAPI event.SpreadsheetsAPI,
 	rdb *redis.Client,
 	logger watermill.LoggerAdapter,
 ) *message.Router {
 	router := message.NewDefaultRouter(logger)
+
+	handler := event.NewHandler(receiptsService, spreadsheetsAPI)
 
 	issueReceiptSubscriber := NewRedisSubscriber(rdb, logger, GroupIssueReceipt)
 	appendToTrackerSubscriber := NewRedisSubscriber(rdb, logger, GroupAppendToTracker)
 
 	router.AddNoPublisherHandler(
 		HandlerIssueReceipt,
-		TopicIssueReceipt,
+		TopicTicketBookingConfirmed,
 		issueReceiptSubscriber,
 		func(msg *message.Message) error {
-			var payload entities.IssueReceiptPayload
-			err := json.Unmarshal(msg.Payload, &payload)
+			var event entities.TicketBookingConfirmed
+			err := json.Unmarshal(msg.Payload, &event)
 			if err != nil {
 				return err
 			}
 
-			slog.Info("Issuing receipt")
-
-			request := entities.IssueReceiptRequest{
-				TicketID: payload.TicketID,
-				Price:    payload.Price,
-			}
-
-			return receiptsService.IssueReceipt(msg.Context(), request)
+			return handler.IssueReceipt(msg.Context(), event)
 		},
 	)
 
 	router.AddNoPublisherHandler(
 		HandlerAppendToTracker,
-		TopicAppendToTracker,
+		TopicTicketBookingConfirmed,
 		appendToTrackerSubscriber,
 		func(msg *message.Message) error {
-			var payload entities.AppendToTrackerPayload
-			err := json.Unmarshal(msg.Payload, &payload)
+			var event entities.TicketBookingConfirmed
+			err := json.Unmarshal(msg.Payload, &event)
 			if err != nil {
 				return err
 			}
 
-			slog.Info("Appending ticket to tracker")
-
-			return spreadsheetsAPI.AppendRow(
-				msg.Context(),
-				SheetName,
-				[]string{
-					payload.TicketID,
-					payload.CustomerEmail,
-					payload.Price.Amount,
-					payload.Price.Currency,
-				},
-			)
+			return handler.AppendToTracker(msg.Context(), event)
 		},
 	)
 

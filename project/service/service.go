@@ -13,6 +13,7 @@ import (
 
 	ticketsHttp "tickets/http"
 	ticketsMsg "tickets/message"
+	"tickets/message/event"
 )
 
 type Service struct {
@@ -22,13 +23,18 @@ type Service struct {
 
 func New(
 	redisClient *redis.Client,
-	spreadsheetsAPI ticketsMsg.SpreadsheetsAPI,
-	receiptsService ticketsMsg.ReceiptsService,
+	spreadsheetsAPI event.SpreadsheetsAPI,
+	receiptsService event.ReceiptsService,
 ) Service {
 	logger := watermill.NewSlogLogger(nil)
 	publisher := ticketsMsg.NewRedisPublisher(redisClient, logger)
 	echoRouter := ticketsHttp.NewHttpRouter(publisher)
-	watermillRouter := ticketsMsg.NewWatermillRouter(receiptsService, spreadsheetsAPI, redisClient, logger)
+	watermillRouter := ticketsMsg.NewWatermillRouter(
+		receiptsService,
+		spreadsheetsAPI,
+		redisClient,
+		logger,
+	)
 
 	return Service{
 		echoRouter:      echoRouter,

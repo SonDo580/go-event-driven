@@ -1,8 +1,7 @@
 package message
 
 const (
-	TopicIssueReceipt    = "issue-receipt"
-	TopicAppendToTracker = "append-to-tracker"
+	TopicTicketBookingConfirmed = "TicketBookingConfirmed"
 )
 
 const (
@@ -14,5 +13,3 @@ const (
 	HandlerIssueReceipt    = "issue-receipt"
 	HandlerAppendToTracker = "append-to-tracker"
 )
-
-const SheetName = "tickets-to-print"

@@ -9,6 +9,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/labstack/echo/v4"
 
+	"tickets/constants"
 	"tickets/entities"
 	ticketsMsg "tickets/message"
 )
@@ -32,42 +33,25 @@ func (h Handler) PostTicketsStatus(c echo.Context) error {
 	}
 
 	for _, ticket := range request.Tickets {
-		if ticket.Status != "confirmed" {
+		if ticket.Status != constants.TicketStatusConfirmed {
 			return fmt.Errorf("unknown ticket status: %s", ticket.Status)
 		}
 
-		issueReceiptPayload := entities.IssueReceiptPayload{
-			TicketID: ticket.TicketID,
-			Price:    ticket.Price,
-		}
-
-		issueReceiptJSON, err := json.Marshal(issueReceiptPayload)
-		if err != nil {
-			return err
-		}
-
-		err = h.publisher.Publish(
-			ticketsMsg.TopicIssueReceipt,
-			message.NewMessage(watermill.NewUUID(), []byte(issueReceiptJSON)),
-		)
-		if err != nil {
-			return err
-		}
-
-		appendToTrackerPayload := entities.AppendToTrackerPayload{
+		event := entities.TicketBookingConfirmed{
+			Header:        entities.NewEventHeader(),
 			TicketID:      ticket.TicketID,
 			CustomerEmail: ticket.CustomerEmail,
 			Price:         ticket.Price,
 		}
 
-		appendToTrackerJSON, err := json.Marshal(appendToTrackerPayload)
+		payload, err := json.Marshal(event)
 		if err != nil {
 			return err
 		}
 
 		err = h.publisher.Publish(
-			ticketsMsg.TopicAppendToTracker,
-			message.NewMessage(watermill.NewUUID(), []byte(appendToTrackerJSON)),
+			ticketsMsg.TopicTicketBookingConfirmed,
+			message.NewMessage(watermill.NewUUID(), []byte(payload)),
 		)
 		if err != nil {
 			return err
