@@ -36,9 +36,19 @@ func (h Handler) PostTicketsStatus(c echo.Context) error {
 			return fmt.Errorf("unknown ticket status: %s", ticket.Status)
 		}
 
+		issueReceiptPayload := entities.IssueReceiptPayload{
+			TicketID: ticket.TicketID,
+			Price:    ticket.Price,
+		}
+
+		issueReceiptJSON, err := json.Marshal(issueReceiptPayload)
+		if err != nil {
+			return err
+		}
+
 		err = h.publisher.Publish(
 			ticketsMsg.TopicIssueReceipt,
-			message.NewMessage(watermill.NewUUID(), []byte(ticket.TicketID)),
+			message.NewMessage(watermill.NewUUID(), []byte(issueReceiptJSON)),
 		)
 		if err != nil {
 			return err

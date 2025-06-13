@@ -16,7 +16,7 @@ type SpreadsheetsAPI interface {
 }
 
 type ReceiptsService interface {
-	IssueReceipt(ctx context.Context, ticketID string) error
+	IssueReceipt(ctx context.Context, request entities.IssueReceiptRequest) error
 }
 
 func NewWatermillRouter(
@@ -35,8 +35,20 @@ func NewWatermillRouter(
 		TopicIssueReceipt,
 		issueReceiptSubscriber,
 		func(msg *message.Message) error {
-			ticketID := string(msg.Payload)
-			return receiptsService.IssueReceipt(msg.Context(), ticketID)
+			var payload entities.IssueReceiptPayload
+			err := json.Unmarshal(msg.Payload, &payload)
+			if err != nil {
+				return err
+			}
+
+			slog.Info("Issuing receipt")
+
+			request := entities.IssueReceiptRequest{
+				TicketID: payload.TicketID,
+				Price:    payload.Price,
+			}
+
+			return receiptsService.IssueReceipt(msg.Context(), request)
 		},
 	)
 
