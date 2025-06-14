@@ -33,29 +33,50 @@ func (h Handler) PostTicketsStatus(c echo.Context) error {
 	}
 
 	for _, ticket := range request.Tickets {
-		if ticket.Status != constants.TicketStatusConfirmed {
+		if ticket.Status == constants.TicketStatusConfirmed {
+			event := entities.TicketBookingConfirmed{
+				Header:        entities.NewEventHeader(),
+				TicketID:      ticket.TicketID,
+				CustomerEmail: ticket.CustomerEmail,
+				Price:         ticket.Price,
+			}
+
+			payload, err := json.Marshal(event)
+			if err != nil {
+				return err
+			}
+
+			err = h.publisher.Publish(
+				ticketsMsg.TopicTicketBookingConfirmed,
+				message.NewMessage(watermill.NewUUID(), []byte(payload)),
+			)
+			if err != nil {
+				return err
+			}
+		} else if ticket.Status == constants.TicketStatusCanceled {
+			event := entities.TicketBookingCanceled{
+				Header:        entities.NewEventHeader(),
+				TicketID:      ticket.TicketID,
+				CustomerEmail: ticket.CustomerEmail,
+				Price:         ticket.Price,
+			}
+
+			payload, err := json.Marshal(event)
+			if err != nil {
+				return err
+			}
+
+			err = h.publisher.Publish(
+				ticketsMsg.TopicTicketBookingCanceled,
+				message.NewMessage(watermill.NewUUID(), []byte(payload)),
+			)
+			if err != nil {
+				return err
+			}
+		} else {
 			return fmt.Errorf("unknown ticket status: %s", ticket.Status)
 		}
 
-		event := entities.TicketBookingConfirmed{
-			Header:        entities.NewEventHeader(),
-			TicketID:      ticket.TicketID,
-			CustomerEmail: ticket.CustomerEmail,
-			Price:         ticket.Price,
-		}
-
-		payload, err := json.Marshal(event)
-		if err != nil {
-			return err
-		}
-
-		err = h.publisher.Publish(
-			ticketsMsg.TopicTicketBookingConfirmed,
-			message.NewMessage(watermill.NewUUID(), []byte(payload)),
-		)
-		if err != nil {
-			return err
-		}
 	}
 
 	return c.NoContent(http.StatusOK)

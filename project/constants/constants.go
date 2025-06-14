@@ -2,6 +2,10 @@ package constants
 
 const (
 	TicketStatusConfirmed = "confirmed"
+	TicketStatusCanceled  = "canceled"
 )
 
-const SheetName = "tickets-to-print"
+const (
+	SheetTicketsToPrint  = "tickets-to-print"
+	SheetTicketsToRefund = "tickets-to-refund"
+)

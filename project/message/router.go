@@ -22,6 +22,7 @@ func NewWatermillRouter(
 
 	issueReceiptSubscriber := NewRedisSubscriber(rdb, logger, GroupIssueReceipt)
 	appendToTrackerSubscriber := NewRedisSubscriber(rdb, logger, GroupAppendToTracker)
+	cancelTicketSubscriber := NewRedisSubscriber(rdb, logger, GroupCancelTicket)
 
 	router.AddNoPublisherHandler(
 		HandlerIssueReceipt,
@@ -50,6 +51,21 @@ func NewWatermillRouter(
 			}
 
 			return handler.AppendToTracker(msg.Context(), event)
+		},
+	)
+
+	router.AddNoPublisherHandler(
+		HandlerCancelTicket,
+		TopicTicketBookingCanceled,
+		cancelTicketSubscriber,
+		func(msg *message.Message) error {
+			var event entities.TicketBookingCanceled
+			err := json.Unmarshal(msg.Payload, &event)
+			if err != nil {
+				return err
+			}
+
+			return handler.CancelTicket(msg.Context(), event)
 		},
 	)
 
