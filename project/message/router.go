@@ -24,6 +24,8 @@ func NewWatermillRouter(
 	appendToTrackerSubscriber := NewRedisSubscriber(rdb, logger, GroupAppendToTracker)
 	cancelTicketSubscriber := NewRedisSubscriber(rdb, logger, GroupCancelTicket)
 
+	useMiddlewares(router)
+
 	router.AddNoPublisherHandler(
 		HandlerIssueReceipt,
 		TopicTicketBookingConfirmed,
