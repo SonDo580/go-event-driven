@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/ThreeDotsLabs/go-event-driven/v2/common/log"
 
 	"tickets/adapters"
+	"tickets/constants"
 	"tickets/message"
 	"tickets/service"
 )
@@ -20,7 +22,13 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	apiClients, err := clients.NewClients(os.Getenv("GATEWAY_ADDR"), nil)
+	apiClients, err := clients.NewClients(
+		os.Getenv("GATEWAY_ADDR"),
+		func(ctx context.Context, req *http.Request) error {
+			req.Header.Set(constants.CorrelationIDHeaderKey, log.CorrelationIDFromContext(ctx))
+			return nil
+		},
+	)
 	if err != nil {
 		panic(err)
 	}

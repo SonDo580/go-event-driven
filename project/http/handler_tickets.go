@@ -46,10 +46,13 @@ func (h Handler) PostTicketsStatus(c echo.Context) error {
 				return err
 			}
 
-			err = h.publisher.Publish(
-				ticketsMsg.TopicTicketBookingConfirmed,
-				message.NewMessage(watermill.NewUUID(), []byte(payload)),
+			msg := message.NewMessage(watermill.NewUUID(), []byte(payload))
+			msg.Metadata.Set(
+				constants.CorrelationIDMetadataKey,
+				c.Request().Header.Get(constants.CorrelationIDHeaderKey),
 			)
+
+			err = h.publisher.Publish(ticketsMsg.TopicTicketBookingConfirmed, msg)
 			if err != nil {
 				return err
 			}
@@ -66,10 +69,13 @@ func (h Handler) PostTicketsStatus(c echo.Context) error {
 				return err
 			}
 
-			err = h.publisher.Publish(
-				ticketsMsg.TopicTicketBookingCanceled,
-				message.NewMessage(watermill.NewUUID(), []byte(payload)),
+			msg := message.NewMessage(watermill.NewUUID(), []byte(payload))
+			msg.Metadata.Set(
+				constants.CorrelationIDMetadataKey,
+				c.Request().Header.Get(constants.CorrelationIDHeaderKey),
 			)
+
+			err = h.publisher.Publish(ticketsMsg.TopicTicketBookingCanceled, msg)
 			if err != nil {
 				return err
 			}
