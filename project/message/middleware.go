@@ -23,6 +23,7 @@ func useMiddlewares(router *message.Router) {
 			}
 
 			ctx = log.ContextWithCorrelationID(ctx, correlationID)
+			ctx = log.ToContext(ctx, slog.With("correlation_id", correlationID))
 			msg.SetContext(ctx)
 
 			return next(msg)
@@ -31,7 +32,7 @@ func useMiddlewares(router *message.Router) {
 
 	router.AddMiddleware(func(next message.HandlerFunc) message.HandlerFunc {
 		return func(msg *message.Message) ([]*message.Message, error) {
-			logger := slog.With(
+			logger := log.FromContext(msg.Context()).With(
 				"message_id", msg.UUID,
 				"payload", string(msg.Payload),
 				"metadata", msg.Metadata,

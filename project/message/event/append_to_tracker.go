@@ -2,16 +2,17 @@ package event
 
 import (
 	"context"
-	"log/slog"
 	"tickets/constants"
 	"tickets/entities"
+
+	"github.com/ThreeDotsLabs/go-event-driven/v2/common/log"
 )
 
 func (h Handler) AppendToTracker(
 	ctx context.Context,
 	event entities.TicketBookingConfirmed,
 ) error {
-	slog.Info("Appending ticket to tracker")
+	log.FromContext(ctx).Info("Appending ticket to tracker")
 
 	return h.spreadsheetsAPI.AppendRow(
 		ctx,
