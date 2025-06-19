@@ -1,4 +1,4 @@
-exercise_id = "8db79ebd-0fb4-4e2c-bf7b-7f2d393f5dac"
-directory = "project"
+exercise_id = "f38a03f1-1a7d-4fcf-845f-71d4f9909cf4"
+directory = "08-component-tests/02-stubs"
 is_text_only = false
-is_optional = false
+is_optional = true
