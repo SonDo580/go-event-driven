@@ -2,6 +2,7 @@ package message
 
 import (
 	"encoding/json"
+	"tickets/constants"
 	"tickets/entities"
 	"tickets/message/event"
 
@@ -9,6 +10,8 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/redis/go-redis/v9"
 )
+
+const brokenMessageID = "2beaf5bc-d5e4-4653-b075-2b36bbf28949"
 
 func NewWatermillRouter(
 	receiptsService event.ReceiptsService,
@@ -31,6 +34,16 @@ func NewWatermillRouter(
 		TopicTicketBookingConfirmed,
 		issueReceiptSubscriber,
 		func(msg *message.Message) error {
+			// Fixing a malformed message
+			// TODO: Remove once fixed
+			if msg.UUID == brokenMessageID {
+				return nil
+			}
+
+			if msg.Metadata.Get(constants.MetadataType) != EventTicketBookingConfirmed {
+				return nil
+			}
+
 			var event entities.TicketBookingConfirmed
 			err := json.Unmarshal(msg.Payload, &event)
 			if err != nil {
@@ -46,6 +59,16 @@ func NewWatermillRouter(
 		TopicTicketBookingConfirmed,
 		appendToTrackerSubscriber,
 		func(msg *message.Message) error {
+			// Fixing a malformed message
+			// TODO: Remove once fixed
+			if msg.UUID == brokenMessageID {
+				return nil
+			}
+
+			if msg.Metadata.Get(constants.MetadataType) != EventTicketBookingConfirmed {
+				return nil
+			}
+
 			var event entities.TicketBookingConfirmed
 			err := json.Unmarshal(msg.Payload, &event)
 			if err != nil {
@@ -61,6 +84,10 @@ func NewWatermillRouter(
 		TopicTicketBookingCanceled,
 		cancelTicketSubscriber,
 		func(msg *message.Message) error {
+			if msg.Metadata.Get(constants.MetadataType) != EventTicketBookingCanceled {
+				return nil
+			}
+
 			var event entities.TicketBookingCanceled
 			err := json.Unmarshal(msg.Payload, &event)
 			if err != nil {

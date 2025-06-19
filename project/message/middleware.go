@@ -26,7 +26,7 @@ func useMiddlewares(router *message.Router) {
 		return func(msg *message.Message) ([]*message.Message, error) {
 			ctx := msg.Context()
 
-			correlationID := msg.Metadata.Get(constants.CorrelationIDMetadataKey)
+			correlationID := msg.Metadata.Get(constants.MetadataCorrelationID)
 			if correlationID == "" {
 				correlationID = shortuuid.New()
 			}

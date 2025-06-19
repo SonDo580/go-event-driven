@@ -10,5 +10,9 @@ const (
 	SheetTicketsToRefund = "tickets-to-refund"
 )
 
-const CorrelationIDHeaderKey = "Correlation-ID"
-const CorrelationIDMetadataKey = "correlation_id"
+const HeaderCorrelationID = "Correlation-ID"
+
+const (
+	MetadataCorrelationID = "correlation_id"
+	MetadataType          = "type"
+)

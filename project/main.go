@@ -25,7 +25,7 @@ func main() {
 	apiClients, err := clients.NewClients(
 		os.Getenv("GATEWAY_ADDR"),
 		func(ctx context.Context, req *http.Request) error {
-			req.Header.Set(constants.CorrelationIDHeaderKey, log.CorrelationIDFromContext(ctx))
+			req.Header.Set(constants.HeaderCorrelationID, log.CorrelationIDFromContext(ctx))
 			return nil
 		},
 	)

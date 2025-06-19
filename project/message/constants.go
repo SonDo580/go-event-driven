@@ -6,6 +6,11 @@ const (
 )
 
 const (
+	EventTicketBookingConfirmed = "TicketBookingConfirmed"
+	EventTicketBookingCanceled  = "TicketBookingCanceled"
+)
+
+const (
 	GroupIssueReceipt    = "issue-receipt"
 	GroupAppendToTracker = "append-to-tracker"
 	GroupCancelTicket    = "cancel-ticket"
