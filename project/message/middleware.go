@@ -3,6 +3,7 @@ package message
 import (
 	"log/slog"
 	"tickets/constants"
+	"time"
 
 	"github.com/ThreeDotsLabs/go-event-driven/v2/common/log"
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -12,6 +13,14 @@ import (
 
 func useMiddlewares(router *message.Router) {
 	router.AddMiddleware(middleware.Recoverer)
+
+	router.AddMiddleware(middleware.Retry{
+		MaxRetries:      10,
+		InitialInterval: time.Millisecond * 100,
+		MaxInterval:     time.Second,
+		Multiplier:      2,
+		Logger:          router.Logger(),
+	}.Middleware)
 
 	router.AddMiddleware(func(next message.HandlerFunc) message.HandlerFunc {
 		return func(msg *message.Message) ([]*message.Message, error) {
