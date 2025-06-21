@@ -43,7 +43,9 @@ func TestComponent(t *testing.T) {
 		assert.NoError(t, err)
 	}()
 
-	ticket := ticketsHttp.TicketStatusRequest{
+	waitForHttpServer(t)
+
+	confirmedTicket := ticketsHttp.TicketStatusRequest{
 		TicketID:      uuid.NewString(),
 		CustomerEmail: "example@example.com",
 		Price: entities.Money{
@@ -52,16 +54,27 @@ func TestComponent(t *testing.T) {
 		},
 		Status: constants.TicketStatusConfirmed,
 	}
-	tickets := ticketsHttp.TicketsStatusRequest{
-		Tickets: []ticketsHttp.TicketStatusRequest{ticket},
+
+	sendTicketsStatus(t, ticketsHttp.TicketsStatusRequest{
+		Tickets: []ticketsHttp.TicketStatusRequest{confirmedTicket},
+	})
+	assertReceiptForTicketIssued(t, receiptsService, confirmedTicket)
+	assertRowToSheetAdded(t, spreadsheetsAPI, confirmedTicket, constants.SheetTicketsToPrint)
+
+	canceledTicket := ticketsHttp.TicketStatusRequest{
+		TicketID:      uuid.NewString(),
+		CustomerEmail: "example@example.com",
+		Price: entities.Money{
+			Amount:   "100",
+			Currency: "USD",
+		},
+		Status: constants.TicketStatusCanceled,
 	}
 
-	waitForHttpServer(t)
-
-	sendTicketsStatus(t, tickets)
-
-	assertReceiptForTicketIssued(t, receiptsService, ticket)
-	assertRowToSheetAdded(t, spreadsheetsAPI, ticket, constants.SheetTicketsToPrint)
+	sendTicketsStatus(t, ticketsHttp.TicketsStatusRequest{
+		Tickets: []ticketsHttp.TicketStatusRequest{canceledTicket},
+	})
+	assertRowToSheetAdded(t, spreadsheetsAPI, canceledTicket, constants.SheetTicketsToRefund)
 }
 
 func waitForHttpServer(t *testing.T) {
