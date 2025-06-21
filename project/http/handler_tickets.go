@@ -14,11 +14,11 @@ import (
 	ticketsMsg "tickets/message"
 )
 
-type ticketsStatusRequest struct {
-	Tickets []ticketStatusRequest `json:"tickets"`
+type TicketsStatusRequest struct {
+	Tickets []TicketStatusRequest `json:"tickets"`
 }
 
-type ticketStatusRequest struct {
+type TicketStatusRequest struct {
 	TicketID      string         `json:"ticket_id"`
 	Status        string         `json:"status"`
 	Price         entities.Money `json:"price"`
@@ -26,7 +26,7 @@ type ticketStatusRequest struct {
 }
 
 func (h Handler) PostTicketsStatus(c echo.Context) error {
-	var request ticketsStatusRequest
+	var request TicketsStatusRequest
 	err := c.Bind(&request)
 	if err != nil {
 		return err
