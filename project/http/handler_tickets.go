@@ -1,17 +1,13 @@
 package http
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
-	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/labstack/echo/v4"
 
 	"tickets/constants"
 	"tickets/entities"
-	ticketsMsg "tickets/message"
 )
 
 type TicketsStatusRequest struct {
@@ -41,23 +37,7 @@ func (h Handler) PostTicketsStatus(c echo.Context) error {
 				Price:         ticket.Price,
 			}
 
-			payload, err := json.Marshal(event)
-			if err != nil {
-				return err
-			}
-
-			msg := message.NewMessage(watermill.NewUUID(), []byte(payload))
-			msg.Metadata.Set(
-				constants.MetadataCorrelationID,
-				c.Request().Header.Get(constants.HeaderCorrelationID),
-			)
-
-			msg.Metadata.Set(
-				constants.MetadataType,
-				ticketsMsg.EventTicketBookingConfirmed,
-			)
-
-			err = h.publisher.Publish(ticketsMsg.TopicTicketBookingConfirmed, msg)
+			err := h.eventBus.Publish(c.Request().Context(), event)
 			if err != nil {
 				return err
 			}
@@ -69,23 +49,7 @@ func (h Handler) PostTicketsStatus(c echo.Context) error {
 				Price:         ticket.Price,
 			}
 
-			payload, err := json.Marshal(event)
-			if err != nil {
-				return err
-			}
-
-			msg := message.NewMessage(watermill.NewUUID(), []byte(payload))
-			msg.Metadata.Set(
-				constants.MetadataCorrelationID,
-				c.Request().Header.Get(constants.HeaderCorrelationID),
-			)
-
-			msg.Metadata.Set(
-				constants.MetadataType,
-				ticketsMsg.EventTicketBookingCanceled,
-			)
-
-			err = h.publisher.Publish(ticketsMsg.TopicTicketBookingCanceled, msg)
+			err := h.eventBus.Publish(c.Request().Context(), event)
 			if err != nil {
 				return err
 			}

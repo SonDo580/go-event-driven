@@ -28,7 +28,9 @@ func New(
 ) Service {
 	logger := watermill.NewSlogLogger(nil)
 	publisher := ticketsMsg.NewRedisPublisher(redisClient, logger)
-	echoRouter := ticketsHttp.NewHttpRouter(publisher)
+	eventBus := ticketsMsg.NewEventBus(publisher)
+
+	echoRouter := ticketsHttp.NewHttpRouter(eventBus)
 	watermillRouter := ticketsMsg.NewWatermillRouter(
 		receiptsService,
 		spreadsheetsAPI,
