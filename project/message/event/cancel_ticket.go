@@ -10,7 +10,7 @@ import (
 
 func (h Handler) CancelTicket(
 	ctx context.Context,
-	event entities.TicketBookingCanceled,
+	event *entities.TicketBookingCanceled,
 ) error {
 	log.FromContext(ctx).Info("Appending ticket to refund sheet")
 

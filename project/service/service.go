@@ -29,11 +29,11 @@ func New(
 	logger := watermill.NewSlogLogger(nil)
 	publisher := ticketsMsg.NewRedisPublisher(redisClient, logger)
 	eventBus := ticketsMsg.NewEventBus(publisher)
+	eventHandler := event.NewHandler(receiptsService, spreadsheetsAPI)
 
 	echoRouter := ticketsHttp.NewHttpRouter(eventBus)
 	watermillRouter := ticketsMsg.NewWatermillRouter(
-		receiptsService,
-		spreadsheetsAPI,
+		eventHandler,
 		redisClient,
 		logger,
 	)

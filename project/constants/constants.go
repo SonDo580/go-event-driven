@@ -12,7 +12,4 @@ const (
 
 const HeaderCorrelationID = "Correlation-ID"
 
-const (
-	MetadataCorrelationID = "correlation_id"
-	MetadataType          = "type"
-)
+const MetadataCorrelationID = "correlation_id"
