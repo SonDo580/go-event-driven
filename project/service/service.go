@@ -14,7 +14,6 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"tickets/db"
-	ticketsDB "tickets/db"
 	ticketsHttp "tickets/http"
 	ticketsMsg "tickets/message"
 	"tickets/message/event"
@@ -27,7 +26,7 @@ type Service struct {
 }
 
 func New(
-	db *sqlx.DB,
+	dbConn *sqlx.DB,
 	redisClient *redis.Client,
 	spreadsheetsAPI event.SpreadsheetsAPI,
 	receiptsService event.ReceiptsService,
@@ -36,10 +35,10 @@ func New(
 	publisher := ticketsMsg.NewRedisPublisher(redisClient, logger)
 	eventBus := ticketsMsg.NewEventBus(publisher)
 
-	ticketsRepo := ticketsDB.NewTicketsRepository(db)
+	ticketsRepo := db.NewTicketsRepository(dbConn)
 	eventHandler := event.NewHandler(receiptsService, spreadsheetsAPI, ticketsRepo)
 
-	echoRouter := ticketsHttp.NewHttpRouter(eventBus)
+	echoRouter := ticketsHttp.NewHttpRouter(eventBus, ticketsRepo)
 	watermillRouter := ticketsMsg.NewWatermillRouter(
 		eventHandler,
 		redisClient,
@@ -47,7 +46,7 @@ func New(
 	)
 
 	return Service{
-		db:              db,
+		db:              dbConn,
 		echoRouter:      echoRouter,
 		watermillRouter: watermillRouter,
 	}

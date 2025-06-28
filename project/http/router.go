@@ -10,11 +10,13 @@ import (
 
 func NewHttpRouter(
 	eventBus *cqrs.EventBus,
+	ticketsRepo TicketsRepository,
 ) *echo.Echo {
 	e := libHttp.NewEcho()
 
 	handler := Handler{
-		eventBus: eventBus,
+		eventBus:    eventBus,
+		ticketsRepo: ticketsRepo,
 	}
 
 	e.GET("/health", func(c echo.Context) error {
@@ -22,6 +24,7 @@ func NewHttpRouter(
 	})
 
 	e.POST("/tickets-status", handler.PostTicketsStatus)
+	e.GET("/tickets", handler.GetTickets)
 
 	return e
 }
