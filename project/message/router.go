@@ -30,12 +30,16 @@ func NewWatermillRouter(
 				eventHandler.AppendToTracker,
 			),
 			cqrs.NewEventHandler(
+				"StoreTicket",
+				eventHandler.StoreTicket,
+			),
+			cqrs.NewEventHandler(
 				"CancelTicket",
 				eventHandler.CancelTicket,
 			),
 			cqrs.NewEventHandler(
-				"StoreTicket",
-				eventHandler.StoreTicket,
+				"RemoveCanceledTicket",
+				eventHandler.RemoveCanceledTicket,
 			),
 		},
 	)
