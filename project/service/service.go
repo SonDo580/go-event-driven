@@ -5,34 +5,41 @@ import (
 	"errors"
 	stdHTTP "net/http"
 
+	"github.com/ThreeDotsLabs/watermill"
 	"github.com/labstack/echo/v4"
+	"github.com/redis/go-redis/v9"
 
 	ticketsHttp "tickets/http"
-	"tickets/worker"
+	"tickets/message"
 )
 
 type Service struct {
 	echoRouter *echo.Echo
-	worker     *worker.Worker
 }
 
 func New(
-	spreadsheetsAPI worker.SpreadsheetsAPI,
-	receiptsService worker.ReceiptsService,
+	redisClient *redis.Client,
+	spreadsheetsAPI message.SpreadsheetsAPI,
+	receiptsService message.ReceiptsService,
 ) Service {
-	w := worker.NewWorker(spreadsheetsAPI, receiptsService)
+	watermillLogger := watermill.NewSlogLogger(nil)
+	publisher := message.NewRedisPublisher(redisClient, watermillLogger)
 
-	echoRouter := ticketsHttp.NewHttpRouter(w)
+	message.NewHandlers(
+		receiptsService,
+		spreadsheetsAPI,
+		redisClient,
+		watermillLogger,
+	)
+
+	echoRouter := ticketsHttp.NewHttpRouter(publisher)
 
 	return Service{
 		echoRouter: echoRouter,
-		worker:     w,
 	}
 }
 
 func (s Service) Run(ctx context.Context) error {
-	go s.worker.Run(ctx)
-
 	err := s.echoRouter.Start(":8080")
 	if err != nil && !errors.Is(err, stdHTTP.ErrServerClosed) {
 		return err

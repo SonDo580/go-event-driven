@@ -2,8 +2,10 @@ package http
 
 import (
 	"net/http"
-	"tickets/worker"
+	"tickets/constants"
 
+	"github.com/ThreeDotsLabs/watermill"
+	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/labstack/echo/v4"
 )
 
@@ -19,16 +21,19 @@ func (h Handler) PostTicketsConfirmation(c echo.Context) error {
 	}
 
 	for _, ticket := range request.Tickets {
-		h.worker.Send(
-			worker.Message{
-				Task:     worker.TaskIssueReceipt,
-				TicketID: ticket,
-			},
-			worker.Message{
-				Task:     worker.TaskAppendToTracker,
-				TicketID: ticket,
-			},
-		)
+		payload := []byte(ticket)
+
+		msg := message.NewMessage(watermill.NewUUID(), payload)
+		err = h.publisher.Publish(constants.TopicIssueReceipt, msg)
+		if err != nil {
+			return err
+		}
+
+		msg = message.NewMessage(watermill.NewUUID(), payload)
+		err = h.publisher.Publish(constants.TopicAppendToTracker, msg)
+		if err != nil {
+			return err
+		}
 	}
 
 	return c.NoContent(http.StatusOK)

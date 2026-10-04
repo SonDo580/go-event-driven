@@ -1,0 +1,11 @@
+package constants
+
+const (
+	TopicIssueReceipt    = "issue-receipt"
+	TopicAppendToTracker = "append-to-tracker"
+)
+
+const (
+	ConsumerGroupIssueReceipt    = "issue-receipt"
+	ConsumerGroupAppendToTracker = "append-to-tracker"
+)
