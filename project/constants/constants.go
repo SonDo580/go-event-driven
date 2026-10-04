@@ -14,3 +14,7 @@ const (
 	HandlerIssueReceipt    = "issue-receipt"
 	HandlerAppendToTracker = "append-to-tracker"
 )
+
+const (
+	TicketStatusConfirmed = "confirmed"
+)
