@@ -2,22 +2,39 @@ package main
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
 )
 
+type MessageHeader struct {
+	ID         string `json:"id"`
+	EventName  string `json:"event_name"`
+	OccurredAt string `json:"occurred_at"`
+}
+
 type ProductOutOfStock struct {
+	Header    MessageHeader
 	ProductID string `json:"product_id"`
 }
 
 type ProductBackInStock struct {
+	Header    MessageHeader
 	ProductID string `json:"product_id"`
 	Quantity  int    `json:"quantity"`
 }
 
 type Publisher struct {
 	pub message.Publisher
+}
+
+func newMessageHeader(eventName string) MessageHeader {
+	return MessageHeader{
+		ID:         watermill.NewUUID(),
+		EventName:  eventName,
+		OccurredAt: time.Now().Format(time.RFC3339),
+	}
 }
 
 func NewPublisher(pub message.Publisher) Publisher {
@@ -28,6 +45,7 @@ func NewPublisher(pub message.Publisher) Publisher {
 
 func (p Publisher) PublishProductOutOfStock(productID string) error {
 	event := ProductOutOfStock{
+		Header:    newMessageHeader("ProductOutOfStock"),
 		ProductID: productID,
 	}
 
@@ -43,6 +61,7 @@ func (p Publisher) PublishProductOutOfStock(productID string) error {
 
 func (p Publisher) PublishProductBackInStock(productID string, quantity int) error {
 	event := ProductBackInStock{
+		Header:    newMessageHeader("ProductBackInStock"),
 		ProductID: productID,
 		Quantity:  quantity,
 	}
