@@ -41,8 +41,8 @@ func main() {
 		"temperature-fahrenheit",
 		pub,
 		func(msg *message.Message) ([]*message.Message, error) {
-			celsius := 
-			fahrenheit, err := celsiusToFahrenheit(string(msg.Payload))
+			celsius := string(msg.Payload)
+			fahrenheit, err := celsiusToFahrenheit(celsius)
 			if err != nil {
 				return nil, err
 			}
