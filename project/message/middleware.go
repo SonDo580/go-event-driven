@@ -3,6 +3,7 @@ package message
 import (
 	"log/slog"
 	"tickets/constants"
+	"time"
 
 	"github.com/ThreeDotsLabs/go-event-driven/v2/common/log"
 	"github.com/ThreeDotsLabs/watermill"
@@ -10,8 +11,17 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 )
 
-func useMiddlewares(router *message.Router) {
+func useMiddlewares(router *message.Router, watermillLogger watermill.LoggerAdapter) {
 	router.AddMiddleware(middleware.Recoverer)
+
+	// Retry
+	router.AddMiddleware(middleware.Retry{
+		MaxRetries:      10,
+		InitialInterval: time.Millisecond * 100,
+		MaxInterval:     time.Second,
+		Multiplier:      2,
+		Logger:          watermillLogger,
+	}.Middleware)
 
 	// Correlation ID
 	router.AddMiddleware(func(next message.HandlerFunc) message.HandlerFunc {
