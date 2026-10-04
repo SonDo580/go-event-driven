@@ -18,6 +18,18 @@ func ConsumeMessages(sub message.Subscriber, alarmClient AlarmClient) {
 	}
 
 	for msg := range messages {
+		value := string(msg.Payload)
+		switch value {
+		case "0":
+			err = alarmClient.StopAlarm()
+		case "1":
+			err = alarmClient.StartAlarm()
+		}
 
+		if err == nil {
+			msg.Ack()
+		} else {
+			msg.Nack()
+		}
 	}
 }
