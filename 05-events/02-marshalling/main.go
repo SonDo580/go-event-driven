@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 
 	"github.com/ThreeDotsLabs/watermill"
@@ -14,6 +15,11 @@ type PaymentCompleted struct {
 	PaymentID   string `json:"payment_id"`
 	OrderID     string `json:"order_id"`
 	CompletedAt string `json:"completed_at"`
+}
+
+type OrderConfirmed struct {
+	OrderID     string `json:"order_id"`
+	ConfirmedAt string `json:"confirmed_at"`
 }
 
 func main() {
@@ -38,6 +44,32 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	router.AddHandler(
+		"payment",
+		"payment-completed",
+		sub,
+		"order-confirmed",
+		pub,
+		func(msg *message.Message) ([]*message.Message, error) {
+			var event PaymentCompleted
+			err = json.Unmarshal(msg.Payload, &event)
+			if err != nil {
+				return nil, err
+			}
+
+			new_event := OrderConfirmed{
+				OrderID: event.OrderID, ConfirmedAt: event.CompletedAt,
+			}
+			new_payload, err := json.Marshal(new_event)
+			if err != nil {
+				return nil, err
+			}
+
+			new_msg := message.NewMessage(watermill.NewUUID(), new_payload)
+			return []*message.Message{new_msg}, nil
+		},
+	)
 
 	err = router.Run(context.Background())
 	if err != nil {
