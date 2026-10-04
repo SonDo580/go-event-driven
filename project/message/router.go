@@ -11,9 +11,6 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// TODO: remove once fixed
-const brokenMessageID = "2beaf5bc-d5e4-4653-b075-2b36bbf28949"
-
 func NewWatermillRouter(
 	receiptsService event.ReceiptsService,
 	spreadsheetsAPI event.SpreadsheetsAPI,
@@ -33,16 +30,15 @@ func NewWatermillRouter(
 		constants.TopicTicketBookingConfirmed,
 		issueReceiptSub,
 		func(msg *message.Message) error {
-			// TODO: remove once fixed
-			if msg.Metadata.Get(constants.MsgMetaType) != constants.EventTypeTicketBookingConfirmed ||
-				msg.UUID == brokenMessageID {
-				return nil // ignore and acknowledge
-			}
-
 			var event entities.TicketBookingConfirmed
 			err := json.Unmarshal(msg.Payload, &event)
 			if err != nil {
 				return err
+			}
+
+			// TODO: remove once fix
+			if event.Price.Currency == "" {
+				event.Price.Currency = "USD"
 			}
 
 			return handler.IssueReceipt(msg.Context(), event)
@@ -54,16 +50,15 @@ func NewWatermillRouter(
 		constants.TopicTicketBookingConfirmed,
 		appendToTrackerSub,
 		func(msg *message.Message) error {
-			// TODO: remove once fixed
-			if msg.Metadata.Get(constants.MsgMetaType) != constants.EventTypeTicketBookingConfirmed ||
-				msg.UUID == brokenMessageID {
-				return nil // ignore and acknowledge
-			}
-
 			var event entities.TicketBookingConfirmed
 			err := json.Unmarshal(msg.Payload, &event)
 			if err != nil {
 				return err
+			}
+
+			// TODO: remove once fix
+			if event.Price.Currency == "" {
+				event.Price.Currency = "USD"
 			}
 
 			return handler.AppendToTracker(msg.Context(), event)
