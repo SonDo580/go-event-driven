@@ -22,6 +22,7 @@ func NewWatermillRouter(
 
 	issueReceiptSub := NewRedisSubscriber(rdb, watermillLogger, constants.ConsumerGroupIssueReceipt)
 	appendToTrackerSub := NewRedisSubscriber(rdb, watermillLogger, constants.ConsumerGroupAppendToTracker)
+	cancelTicketSub := NewRedisSubscriber(rdb, watermillLogger, constants.ConsumerGroupRefund)
 
 	router.AddConsumerHandler(
 		constants.HandlerIssueReceipt,
@@ -50,6 +51,21 @@ func NewWatermillRouter(
 			}
 
 			return handler.AppendToTracker(msg.Context(), event)
+		},
+	)
+
+	router.AddConsumerHandler(
+		constants.HandlerCancelTicket,
+		constants.TopicTicketBookingCanceled,
+		cancelTicketSub,
+		func(msg *message.Message) error {
+			var event entities.TicketBookingCanceled
+			err := json.Unmarshal(msg.Payload, &event)
+			if err != nil {
+				return err
+			}
+
+			return handler.CancelTicket(msg.Context(), event)
 		},
 	)
 

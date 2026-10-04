@@ -2,18 +2,27 @@ package constants
 
 const (
 	TopicTicketBookingConfirmed = "TicketBookingConfirmed"
+	TopicTicketBookingCanceled  = "TicketBookingCanceled"
 )
 
 const (
-	ConsumerGroupIssueReceipt    = "issue-receipt"
-	ConsumerGroupAppendToTracker = "append-to-tracker"
+	ConsumerGroupIssueReceipt    = "issue_receipt"
+	ConsumerGroupAppendToTracker = "append_to_tracker"
+	ConsumerGroupRefund          = "refund"
 )
 
 const (
-	HandlerIssueReceipt    = "issue-receipt"
-	HandlerAppendToTracker = "append-to-tracker"
+	HandlerIssueReceipt    = "issue_receipt"
+	HandlerAppendToTracker = "append_to_tracker"
+	HandlerCancelTicket    = "cancel_ticket"
 )
 
 const (
 	TicketStatusConfirmed = "confirmed"
+	TicketStatusCanceled  = "canceled"
+)
+
+const (
+	SheetTicketsToPrint  = "tickets-to-print"
+	SheetTicketsToRefund = "tickets-to-refund"
 )

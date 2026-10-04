@@ -7,12 +7,12 @@ import (
 	"tickets/entities"
 )
 
-func (h Handler) AppendToTracker(ctx context.Context, event entities.TicketBookingConfirmed) error {
-	slog.Info("Appending ticket to tracker")
+func (h Handler) CancelTicket(ctx context.Context, event entities.TicketBookingCanceled) error {
+	slog.Info("Adding ticket refund to sheet")
 
 	return h.spreadsheetsAPI.AppendRow(
 		ctx,
-		constants.SheetTicketsToPrint,
+		constants.SheetTicketsToRefund,
 		[]string{event.TicketID, event.CustomerEmail, event.Price.Amount, event.Price.Currency},
 	)
 }
