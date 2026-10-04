@@ -6,6 +6,11 @@ const (
 )
 
 const (
+	EventTypeTicketBookingConfirmed = "TicketBookingConfirmed"
+	EventTypeTicketBookingCanceled  = "TicketBookingCanceled"
+)
+
+const (
 	ConsumerGroupIssueReceipt    = "issue_receipt"
 	ConsumerGroupAppendToTracker = "append_to_tracker"
 	ConsumerGroupRefund          = "refund"
@@ -33,4 +38,5 @@ const (
 
 const (
 	MsgMetaCorrelationID = "correlation_id"
+	MsgMetaType          = "type"
 )

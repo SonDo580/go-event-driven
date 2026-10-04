@@ -50,6 +50,10 @@ func (h Handler) PostTicketsStatus(c echo.Context) error {
 				constants.MsgMetaCorrelationID,
 				c.Request().Header.Get(constants.HeaderCorrelationID),
 			)
+			msg.Metadata.Set(
+				constants.MsgMetaType,
+				constants.EventTypeTicketBookingConfirmed,
+			)
 
 			err = h.publisher.Publish(constants.TopicTicketBookingConfirmed, msg)
 			if err != nil {
@@ -72,6 +76,10 @@ func (h Handler) PostTicketsStatus(c echo.Context) error {
 			msg.Metadata.Set(
 				constants.MsgMetaCorrelationID,
 				c.Request().Header.Get(constants.HeaderCorrelationID),
+			)
+			msg.Metadata.Set(
+				constants.MsgMetaType,
+				constants.EventTypeTicketBookingCanceled,
 			)
 
 			err = h.publisher.Publish(constants.TopicTicketBookingCanceled, msg)
