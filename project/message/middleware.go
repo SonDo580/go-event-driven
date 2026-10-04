@@ -13,7 +13,7 @@ import (
 func useMiddlewares(router *message.Router) {
 	router.AddMiddleware(middleware.Recoverer)
 
-	// Correlation ID middleware
+	// Correlation ID
 	router.AddMiddleware(func(next message.HandlerFunc) message.HandlerFunc {
 		return func(msg *message.Message) ([]*message.Message, error) {
 			correlationID := msg.Metadata.Get(constants.MsgMetaCorrelationID)
@@ -29,7 +29,7 @@ func useMiddlewares(router *message.Router) {
 		}
 	})
 
-	// Log middleware (must come after the correlation ID middleware)
+	// Log (must come after the correlation ID middleware)
 	router.AddMiddleware(func(next message.HandlerFunc) message.HandlerFunc {
 		return func(msg *message.Message) ([]*message.Message, error) {
 			logger := log.FromContext(msg.Context()).With(
@@ -41,7 +41,13 @@ func useMiddlewares(router *message.Router) {
 
 			logger.Info("Handling a message")
 
-			return next(msg)
+			msgs, err := next(msg)
+			if err != nil {
+				logger.With("error", err).Error("Error while handling a message")
+			}
+
+			// must return produced messages (otherwise we will lose them)
+			return msgs, err
 		}
 	})
 }
