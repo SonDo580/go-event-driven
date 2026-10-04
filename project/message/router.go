@@ -19,6 +19,7 @@ func NewWatermillRouter(
 ) *message.Router {
 	router := message.NewDefaultRouter(watermillLogger)
 	handler := event.NewHandler(spreadsheetsAPI, receiptsService)
+	useMiddlewares(router)
 
 	issueReceiptSub := NewRedisSubscriber(rdb, watermillLogger, constants.ConsumerGroupIssueReceipt)
 	appendToTrackerSub := NewRedisSubscriber(rdb, watermillLogger, constants.ConsumerGroupAppendToTracker)
