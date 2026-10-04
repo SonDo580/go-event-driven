@@ -13,6 +13,7 @@ import (
 func useMiddlewares(router *message.Router) {
 	router.AddMiddleware(middleware.Recoverer)
 
+	// Correlation ID middleware
 	router.AddMiddleware(func(next message.HandlerFunc) message.HandlerFunc {
 		return func(msg *message.Message) ([]*message.Message, error) {
 			correlationID := msg.Metadata.Get(constants.MsgMetaCorrelationID)
@@ -20,16 +21,18 @@ func useMiddlewares(router *message.Router) {
 				correlationID = watermill.NewShortUUID()
 			}
 
-			ctx := log.ContextWithCorrelationID(msg.Context(), correlationID)
+			ctx := log.ToContext(msg.Context(), slog.With("correlation_id", correlationID))
+			ctx = log.ContextWithCorrelationID(ctx, correlationID)
 			msg.SetContext(ctx)
 
 			return next(msg)
 		}
 	})
 
+	// Log middleware (must come after the correlation ID middleware)
 	router.AddMiddleware(func(next message.HandlerFunc) message.HandlerFunc {
 		return func(msg *message.Message) ([]*message.Message, error) {
-			logger := slog.With(
+			logger := log.FromContext(msg.Context()).With(
 				"message_id", msg.UUID,
 				"payload", string(msg.Payload), // should only do if payload doesn't contain sensitive info
 				"metadata", msg.Metadata,
@@ -41,5 +44,4 @@ func useMiddlewares(router *message.Router) {
 			return next(msg)
 		}
 	})
-
 }

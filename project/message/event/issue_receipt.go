@@ -2,12 +2,13 @@ package event
 
 import (
 	"context"
-	"log/slog"
 	"tickets/entities"
+
+	"github.com/ThreeDotsLabs/go-event-driven/v2/common/log"
 )
 
 func (h Handler) IssueReceipt(ctx context.Context, event entities.TicketBookingConfirmed) error {
-	slog.Info("Issuing receipt")
+	log.FromContext(ctx).Info("Issuing receipt")
 
 	request := entities.IssueReceiptRequest{
 		TicketID: event.TicketID,

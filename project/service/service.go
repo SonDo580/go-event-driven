@@ -6,6 +6,7 @@ import (
 	stdHTTP "net/http"
 	"time"
 
+	"github.com/ThreeDotsLabs/go-event-driven/v2/common/log"
 	"github.com/ThreeDotsLabs/watermill"
 	watermillMessage "github.com/ThreeDotsLabs/watermill/message"
 	"github.com/labstack/echo/v4"
@@ -27,7 +28,7 @@ func New(
 	spreadsheetsAPI event.SpreadsheetsAPI,
 	receiptsService event.ReceiptsService,
 ) Service {
-	watermillLogger := watermill.NewSlogLogger(nil)
+	watermillLogger := watermill.NewSlogLogger(log.FromContext(context.Background()))
 	publisher := message.NewRedisPublisher(redisClient, watermillLogger)
 
 	watermillRouter := message.NewWatermillRouter(
