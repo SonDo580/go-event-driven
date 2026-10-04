@@ -46,6 +46,10 @@ func (h Handler) PostTicketsStatus(c echo.Context) error {
 			}
 
 			msg := message.NewMessage(watermill.NewUUID(), payload)
+			msg.Metadata.Set(
+				constants.MsgMetaCorrelationID,
+				c.Request().Header.Get(constants.HeaderCorrelationID),
+			)
 
 			err = h.publisher.Publish(constants.TopicTicketBookingConfirmed, msg)
 			if err != nil {
@@ -65,6 +69,10 @@ func (h Handler) PostTicketsStatus(c echo.Context) error {
 			}
 
 			msg := message.NewMessage(watermill.NewUUID(), payload)
+			msg.Metadata.Set(
+				constants.MsgMetaCorrelationID,
+				c.Request().Header.Get(constants.HeaderCorrelationID),
+			)
 
 			err = h.publisher.Publish(constants.TopicTicketBookingCanceled, msg)
 			if err != nil {

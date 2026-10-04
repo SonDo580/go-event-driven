@@ -26,3 +26,11 @@ const (
 	SheetTicketsToPrint  = "tickets-to-print"
 	SheetTicketsToRefund = "tickets-to-refund"
 )
+
+const (
+	HeaderCorrelationID = "Correlation-ID"
+)
+
+const (
+	MsgMetaCorrelationID = "correlation_id"
+)
