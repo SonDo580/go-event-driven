@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	stdHTTP "net/http"
+	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
 	watermillMessage "github.com/ThreeDotsLabs/watermill/message"
 	"github.com/labstack/echo/v4"
 	"github.com/redis/go-redis/v9"
+	"golang.org/x/sync/errgroup"
 
 	ticketsHttp "tickets/http"
 	"tickets/message"
@@ -43,17 +45,27 @@ func New(
 }
 
 func (s Service) Run(ctx context.Context) error {
-	go func() {
-		err := s.watermillRouter.Run(context.Background())
-		if err != nil {
-			panic(err)
+	g, ctx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		return s.watermillRouter.Run(ctx)
+	})
+
+	g.Go(func() error {
+		err := s.echoRouter.Start(":8080")
+		if err != nil && !errors.Is(err, stdHTTP.ErrServerClosed) {
+			return err
 		}
-	}()
+		return nil
+	})
 
-	err := s.echoRouter.Start(":8080")
-	if err != nil && !errors.Is(err, stdHTTP.ErrServerClosed) {
-		return err
-	}
+	g.Go(func() error {
+		<-ctx.Done()
 
-	return nil
+		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer shutdownCancel()
+		return s.echoRouter.Shutdown(shutdownCtx)
+	})
+
+	return g.Wait()
 }
