@@ -1,6 +1,7 @@
 package http
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"tickets/constants"
@@ -34,15 +35,25 @@ func (h Handler) PostTicketsStatus(c echo.Context) error {
 			return fmt.Errorf("unknown ticket status: %s", ticket.Status)
 		}
 
-		payload := []byte(ticket.TicketID)
-
-		msg := message.NewMessage(watermill.NewUUID(), payload)
+		issueReceiptPayload := []byte(ticket.TicketID)
+		msg := message.NewMessage(watermill.NewUUID(), issueReceiptPayload)
 		err = h.publisher.Publish(constants.TopicIssueReceipt, msg)
 		if err != nil {
 			return err
 		}
 
-		msg = message.NewMessage(watermill.NewUUID(), payload)
+		appendToTrackerPayload := entities.AppendToTrackerPayload{
+			TicketID:      ticket.TicketID,
+			CustomerEmail: ticket.CustomerEmail,
+			Price:         ticket.Price,
+		}
+
+		appendToTrackerJSON, err := json.Marshal(appendToTrackerPayload)
+		if err != nil {
+			return err
+		}
+
+		msg = message.NewMessage(watermill.NewUUID(), appendToTrackerJSON)
 		err = h.publisher.Publish(constants.TopicAppendToTracker, msg)
 		if err != nil {
 			return err
