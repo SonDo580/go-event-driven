@@ -31,39 +31,27 @@ func (h Handler) PostTicketsStatus(c echo.Context) error {
 	}
 
 	for _, ticket := range request.Tickets {
-		if ticket.Status != constants.TicketStatusConfirmed {
+		if ticket.Status == constants.TicketStatusConfirmed {
+			event := entities.TicketBookingConfirmed{
+				Header:        entities.NewMessageHeader(),
+				TicketID:      ticket.TicketID,
+				CustomerEmail: ticket.CustomerEmail,
+				Price:         ticket.Price,
+			}
+
+			payload, err := json.Marshal(event)
+			if err != nil {
+				return err
+			}
+
+			msg := message.NewMessage(watermill.NewUUID(), payload)
+
+			err = h.publisher.Publish(constants.TopicTicketBookingConfirmed, msg)
+			if err != nil {
+				return err
+			}
+		} else {
 			return fmt.Errorf("unknown ticket status: %s", ticket.Status)
-		}
-
-		issueReceiptPayload := entities.IssueReceiptPayload{
-			TicketID: ticket.TicketID,
-			Price:    ticket.Price,
-		}
-		issueReceiptJSON, err := json.Marshal(issueReceiptPayload)
-		if err != nil {
-			return err
-		}
-
-		msg := message.NewMessage(watermill.NewUUID(), issueReceiptJSON)
-		err = h.publisher.Publish(constants.TopicIssueReceipt, msg)
-		if err != nil {
-			return err
-		}
-
-		appendToTrackerPayload := entities.AppendToTrackerPayload{
-			TicketID:      ticket.TicketID,
-			CustomerEmail: ticket.CustomerEmail,
-			Price:         ticket.Price,
-		}
-		appendToTrackerJSON, err := json.Marshal(appendToTrackerPayload)
-		if err != nil {
-			return err
-		}
-
-		msg = message.NewMessage(watermill.NewUUID(), appendToTrackerJSON)
-		err = h.publisher.Publish(constants.TopicAppendToTracker, msg)
-		if err != nil {
-			return err
 		}
 	}
 

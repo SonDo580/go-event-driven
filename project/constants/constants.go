@@ -1,8 +1,7 @@
 package constants
 
 const (
-	TopicIssueReceipt    = "issue-receipt"
-	TopicAppendToTracker = "append-to-tracker"
+	TopicTicketBookingConfirmed = "TicketBookingConfirmed"
 )
 
 const (
