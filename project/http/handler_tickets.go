@@ -1,14 +1,11 @@
 package http
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"tickets/constants"
 	"tickets/entities"
 
-	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/labstack/echo/v4"
 )
 
@@ -40,24 +37,8 @@ func (h Handler) PostTicketsStatus(c echo.Context) error {
 				Price:         ticket.Price,
 			}
 
-			payload, err := json.Marshal(event)
-			if err != nil {
-				return err
-			}
-
-			msg := message.NewMessage(watermill.NewUUID(), payload)
-			msg.Metadata.Set(
-				constants.MsgMetaCorrelationID,
-				c.Request().Header.Get(constants.HeaderCorrelationID),
-			)
-			msg.Metadata.Set(
-				constants.MsgMetaType,
-				constants.EventTypeTicketBookingConfirmed,
-			)
-
-			err = h.publisher.Publish(constants.TopicTicketBookingConfirmed, msg)
-			if err != nil {
-				return err
+			if err = h.eventBus.Publish(c.Request().Context(), event); err != nil {
+				return fmt.Errorf("failed to publish TicketBookingConfirmed event: %w", err)
 			}
 		case constants.TicketStatusCanceled:
 			event := entities.TicketBookingCanceled{
@@ -67,24 +48,8 @@ func (h Handler) PostTicketsStatus(c echo.Context) error {
 				Price:         ticket.Price,
 			}
 
-			payload, err := json.Marshal(event)
-			if err != nil {
-				return err
-			}
-
-			msg := message.NewMessage(watermill.NewUUID(), payload)
-			msg.Metadata.Set(
-				constants.MsgMetaCorrelationID,
-				c.Request().Header.Get(constants.HeaderCorrelationID),
-			)
-			msg.Metadata.Set(
-				constants.MsgMetaType,
-				constants.EventTypeTicketBookingCanceled,
-			)
-
-			err = h.publisher.Publish(constants.TopicTicketBookingCanceled, msg)
-			if err != nil {
-				return err
+			if err = h.eventBus.Publish(c.Request().Context(), event); err != nil {
+				return fmt.Errorf("failed to publish TicketBookingCanceled event: %w", err)
 			}
 		default:
 			return fmt.Errorf("unknown ticket status: %s", ticket.Status)

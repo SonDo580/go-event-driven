@@ -30,6 +30,7 @@ func New(
 ) Service {
 	watermillLogger := watermill.NewSlogLogger(log.FromContext(context.Background()))
 	publisher := message.NewRedisPublisher(redisClient, watermillLogger)
+	eventBus := event.NewBus(publisher)
 
 	watermillRouter := message.NewWatermillRouter(
 		receiptsService,
@@ -38,7 +39,7 @@ func New(
 		watermillLogger,
 	)
 
-	echoRouter := ticketsHttp.NewHttpRouter(publisher)
+	echoRouter := ticketsHttp.NewHttpRouter(eventBus)
 
 	return Service{
 		echoRouter:      echoRouter,

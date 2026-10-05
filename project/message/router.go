@@ -36,11 +36,6 @@ func NewWatermillRouter(
 				return err
 			}
 
-			// TODO: remove once fix
-			if event.Price.Currency == "" {
-				event.Price.Currency = "USD"
-			}
-
 			return handler.IssueReceipt(msg.Context(), event)
 		},
 	)
@@ -54,11 +49,6 @@ func NewWatermillRouter(
 			err := json.Unmarshal(msg.Payload, &event)
 			if err != nil {
 				return err
-			}
-
-			// TODO: remove once fix
-			if event.Price.Currency == "" {
-				event.Price.Currency = "USD"
 			}
 
 			return handler.AppendToTracker(msg.Context(), event)
