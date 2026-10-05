@@ -39,6 +39,10 @@ func NewWatermillRouter(
 			constants.HandlerStoreTicket,
 			eventHandler.StoreTicket,
 		),
+		cqrs.NewEventHandler(
+			constants.HandlerRemoveCanceledTicket,
+			eventHandler.RemoveCanceledTicket,
+		),
 	)
 
 	return router

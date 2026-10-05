@@ -5,10 +5,11 @@ const (
 )
 
 const (
-	HandlerStoreTicket     = "store_ticket"
-	HandlerIssueReceipt    = "issue_receipt"
-	HandlerAppendToTracker = "append_to_tracker"
-	HandlerCancelTicket    = "cancel_ticket"
+	HandlerIssueReceipt         = "issue_receipt"
+	HandlerAppendToTracker      = "append_to_tracker"
+	HandlerCancelTicket         = "cancel_ticket"
+	HandlerStoreTicket          = "store_ticket"
+	HandlerRemoveCanceledTicket = "remove_canceled_ticket"
 )
 
 const (

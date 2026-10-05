@@ -15,6 +15,7 @@ type ReceiptsService interface {
 
 type TicketsRepository interface {
 	Add(ctx context.Context, ticket entities.Ticket) error
+	Remove(ctx context.Context, ticketID string) error
 }
 
 type Handler struct {
