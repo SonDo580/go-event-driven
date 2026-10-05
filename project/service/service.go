@@ -46,7 +46,7 @@ func New(
 		watermillLogger,
 	)
 
-	echoRouter := ticketsHttp.NewHttpRouter(eventBus)
+	echoRouter := ticketsHttp.NewHttpRouter(eventBus, ticketsRepo)
 
 	return Service{
 		db:              dbConn,
