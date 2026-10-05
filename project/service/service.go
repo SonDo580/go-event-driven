@@ -29,13 +29,15 @@ func New(
 	receiptsService event.ReceiptsService,
 ) Service {
 	watermillLogger := watermill.NewSlogLogger(log.FromContext(context.Background()))
+
 	publisher := message.NewRedisPublisher(redisClient, watermillLogger)
 	eventBus := event.NewBus(publisher)
 
+	eventHandler := event.NewHandler(spreadsheetsAPI, receiptsService)
+	eventProcessConfig := event.NewProcessorConfig(redisClient, watermillLogger)
 	watermillRouter := message.NewWatermillRouter(
-		receiptsService,
-		spreadsheetsAPI,
-		redisClient,
+		eventHandler,
+		eventProcessConfig,
 		watermillLogger,
 	)
 

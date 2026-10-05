@@ -15,11 +15,11 @@ func NewRedisClient(addr string) *redis.Client {
 	})
 }
 
-func NewRedisPublisher(rdb *redis.Client, watermillLogger watermill.LoggerAdapter) message.Publisher {
+func NewRedisPublisher(redisClient *redis.Client, watermillLogger watermill.LoggerAdapter) message.Publisher {
 	var pub message.Publisher
 
 	pub, err := redisstream.NewPublisher(redisstream.PublisherConfig{
-		Client: rdb,
+		Client: redisClient,
 	}, watermillLogger)
 	if err != nil {
 		panic(err)
@@ -36,10 +36,10 @@ func NewRedisPublisher(rdb *redis.Client, watermillLogger watermill.LoggerAdapte
 }
 
 func NewRedisSubscriber(
-	rdb *redis.Client, watermillLogger watermill.LoggerAdapter, consumerGroup string,
+	redisClient *redis.Client, watermillLogger watermill.LoggerAdapter, consumerGroup string,
 ) message.Subscriber {
 	sub, err := redisstream.NewSubscriber(redisstream.SubscriberConfig{
-		Client:        rdb,
+		Client:        redisClient,
 		ConsumerGroup: consumerGroup,
 	}, watermillLogger)
 	if err != nil {
