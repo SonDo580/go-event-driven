@@ -26,8 +26,8 @@ func (t TicketsRepository) Add(ctx context.Context, ticket entities.Ticket) erro
 		`INSERT INTO 
 			tickets (ticket_id, price_amount, price_currency, customer_email) 
 		VALUES 
-			(:ticket_id, :price.amount, :price.currency, :customer_email);
-		`,
+			(:ticket_id, :price.amount, :price.currency, :customer_email)
+		ON CONFLICT DO NOTHING`,
 		ticket,
 	)
 
@@ -58,15 +58,12 @@ func (t TicketsRepository) FindAll(ctx context.Context) ([]entities.Ticket, erro
 	err := t.db.SelectContext(
 		ctx,
 		&tickets,
-		`
-		SELECT
+		`SELECT
 			ticket_id,
 			price_amount AS "price.amount",
 			price_currency AS "price.currency",
 			customer_email
-		FROM
-			tickets
-		`,
+		FROM tickets`,
 	)
 
 	if err != nil {
