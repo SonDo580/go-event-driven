@@ -20,7 +20,8 @@ func (p *PaymentsHandler) HandlePaymentTaken(ctx context.Context, event *Payment
 }
 
 type PaymentsRepository struct {
-	payments []PaymentTaken
+	payments        []PaymentTaken
+	savedPaymentIDs map[string]bool
 }
 
 func (p *PaymentsRepository) Payments() []PaymentTaken {
@@ -28,10 +29,16 @@ func (p *PaymentsRepository) Payments() []PaymentTaken {
 }
 
 func NewPaymentsRepository() *PaymentsRepository {
-	return &PaymentsRepository{}
+	return &PaymentsRepository{savedPaymentIDs: map[string]bool{}}
 }
 
 func (p *PaymentsRepository) SavePaymentTaken(ctx context.Context, event *PaymentTaken) error {
+	if p.savedPaymentIDs[event.PaymentID] {
+		return nil
+	}
+
 	p.payments = append(p.payments, *event)
+	p.savedPaymentIDs[event.PaymentID] = true
+
 	return nil
 }
