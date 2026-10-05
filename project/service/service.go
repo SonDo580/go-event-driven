@@ -37,7 +37,8 @@ func New(
 	publisher := message.NewRedisPublisher(redisClient, watermillLogger)
 	eventBus := event.NewBus(publisher)
 
-	eventHandler := event.NewHandler(spreadsheetsAPI, receiptsService)
+	ticketsRepo := db.NewTicketRepository(dbConn)
+	eventHandler := event.NewHandler(spreadsheetsAPI, receiptsService, ticketsRepo)
 	eventProcessConfig := event.NewProcessorConfig(redisClient, watermillLogger)
 	watermillRouter := message.NewWatermillRouter(
 		eventHandler,

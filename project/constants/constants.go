@@ -5,6 +5,7 @@ const (
 )
 
 const (
+	HandlerStoreTicket     = "store_ticket"
 	HandlerIssueReceipt    = "issue_receipt"
 	HandlerAppendToTracker = "append_to_tracker"
 	HandlerCancelTicket    = "cancel_ticket"
