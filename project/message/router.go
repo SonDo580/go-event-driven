@@ -32,12 +32,16 @@ func NewWatermillRouter(
 			eventHandler.IssueReceipt,
 		),
 		cqrs.NewEventHandler(
-			constants.HandlerCancelTicket,
-			eventHandler.CancelTicket,
+			constants.HandlerPrintTicket,
+			eventHandler.PrintTicket,
 		),
 		cqrs.NewEventHandler(
 			constants.HandlerStoreTicket,
 			eventHandler.StoreTicket,
+		),
+		cqrs.NewEventHandler(
+			constants.HandlerCancelTicket,
+			eventHandler.CancelTicket,
 		),
 		cqrs.NewEventHandler(
 			constants.HandlerRemoveCanceledTicket,

@@ -7,8 +7,9 @@ const (
 const (
 	HandlerIssueReceipt         = "issue_receipt"
 	HandlerAppendToTracker      = "append_to_tracker"
-	HandlerCancelTicket         = "cancel_ticket"
+	HandlerPrintTicket          = "print_ticket"
 	HandlerStoreTicket          = "store_ticket"
+	HandlerCancelTicket         = "cancel_ticket"
 	HandlerRemoveCanceledTicket = "remove_canceled_ticket"
 )
 

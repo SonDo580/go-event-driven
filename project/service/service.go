@@ -31,6 +31,7 @@ func New(
 	redisClient *redis.Client,
 	spreadsheetsAPI event.SpreadsheetsAPI,
 	receiptsService event.ReceiptsService,
+	filesAPI event.FilesAPI,
 ) Service {
 	watermillLogger := watermill.NewSlogLogger(log.FromContext(context.Background()))
 
@@ -38,7 +39,9 @@ func New(
 	eventBus := event.NewBus(publisher)
 
 	ticketsRepo := db.NewTicketRepository(dbConn)
-	eventHandler := event.NewHandler(spreadsheetsAPI, receiptsService, ticketsRepo)
+	eventHandler := event.NewHandler(
+		spreadsheetsAPI, receiptsService, filesAPI, ticketsRepo,
+	)
 	eventProcessConfig := event.NewProcessorConfig(redisClient, watermillLogger)
 	watermillRouter := message.NewWatermillRouter(
 		eventHandler,

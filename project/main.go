@@ -37,6 +37,7 @@ func main() {
 
 	spreadsheetsAPI := adapters.NewSpreadsheetsAPIClient(apiClients)
 	receiptsService := adapters.NewReceiptsServiceClient(apiClients)
+	filesAPI := adapters.NewFilesApiClient(apiClients)
 
 	redisClient := message.NewRedisClient(os.Getenv("REDIS_ADDR"))
 	defer redisClient.Close()
@@ -52,6 +53,7 @@ func main() {
 		redisClient,
 		spreadsheetsAPI,
 		receiptsService,
+		filesAPI,
 	).Run(ctx)
 	if err != nil {
 		panic(err)

@@ -13,6 +13,10 @@ type ReceiptsService interface {
 	IssueReceipt(ctx context.Context, request entities.IssueReceiptRequest) error
 }
 
+type FilesAPI interface {
+	UploadFile(ctx context.Context, fileID string, fileContent string) error
+}
+
 type TicketsRepository interface {
 	Add(ctx context.Context, ticket entities.Ticket) error
 	Remove(ctx context.Context, ticketID string) error
@@ -21,12 +25,14 @@ type TicketsRepository interface {
 type Handler struct {
 	spreadsheetsAPI   SpreadsheetsAPI
 	receiptsService   ReceiptsService
+	filesAPI          FilesAPI
 	ticketsRepository TicketsRepository
 }
 
 func NewHandler(
 	spreadsheetsAPI SpreadsheetsAPI,
 	receiptsService ReceiptsService,
+	filesAPI FilesAPI,
 	ticketsRepository TicketsRepository,
 ) Handler {
 	if spreadsheetsAPI == nil {
@@ -35,6 +41,9 @@ func NewHandler(
 	if receiptsService == nil {
 		panic("missing receiptsService")
 	}
+	if filesAPI == nil {
+		panic("missing filesService")
+	}
 	if ticketsRepository == nil {
 		panic("missing db")
 	}
@@ -42,6 +51,7 @@ func NewHandler(
 	return Handler{
 		spreadsheetsAPI:   spreadsheetsAPI,
 		receiptsService:   receiptsService,
+		filesAPI:          filesAPI,
 		ticketsRepository: ticketsRepository,
 	}
 }
