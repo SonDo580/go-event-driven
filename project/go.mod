@@ -6,7 +6,9 @@ require (
 	github.com/ThreeDotsLabs/go-event-driven/v2 v2.0.0
 	github.com/ThreeDotsLabs/watermill v1.5.1
 	github.com/ThreeDotsLabs/watermill-redisstream v1.4.5
+	github.com/jmoiron/sqlx v1.4.0
 	github.com/labstack/echo/v4 v4.13.4
+	github.com/lib/pq v1.10.9
 	github.com/redis/go-redis/v9 v9.12.1
 	golang.org/x/sync v0.14.0
 )

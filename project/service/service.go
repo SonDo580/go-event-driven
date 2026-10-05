@@ -9,21 +9,25 @@ import (
 	"github.com/ThreeDotsLabs/go-event-driven/v2/common/log"
 	"github.com/ThreeDotsLabs/watermill"
 	watermillMessage "github.com/ThreeDotsLabs/watermill/message"
+	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/sync/errgroup"
 
+	"tickets/db"
 	ticketsHttp "tickets/http"
 	"tickets/message"
 	"tickets/message/event"
 )
 
 type Service struct {
+	db              *sqlx.DB
 	echoRouter      *echo.Echo
 	watermillRouter *watermillMessage.Router
 }
 
 func New(
+	dbConn *sqlx.DB,
 	redisClient *redis.Client,
 	spreadsheetsAPI event.SpreadsheetsAPI,
 	receiptsService event.ReceiptsService,
@@ -44,12 +48,17 @@ func New(
 	echoRouter := ticketsHttp.NewHttpRouter(eventBus)
 
 	return Service{
+		db:              dbConn,
 		echoRouter:      echoRouter,
 		watermillRouter: watermillRouter,
 	}
 }
 
 func (s Service) Run(ctx context.Context) error {
+	if err := db.InitializeDBSchema(s.db); err != nil {
+		return err
+	}
+
 	g, ctx := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
