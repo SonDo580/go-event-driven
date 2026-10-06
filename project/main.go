@@ -13,6 +13,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"tickets/adapters"
+	"tickets/config"
 	"tickets/constants"
 	"tickets/message"
 	"tickets/service"
@@ -24,8 +25,9 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
+	cfg := config.Get()
 	apiClients, err := clients.NewClients(
-		os.Getenv("GATEWAY_ADDR"),
+		cfg.GatewayAddr,
 		func(ctx context.Context, req *http.Request) error {
 			req.Header.Set(constants.HeaderCorrelationID, log.CorrelationIDFromContext(ctx))
 			return nil
@@ -39,10 +41,10 @@ func main() {
 	receiptsService := adapters.NewReceiptsServiceClient(apiClients)
 	filesAPI := adapters.NewFilesApiClient(apiClients)
 
-	redisClient := message.NewRedisClient(os.Getenv("REDIS_ADDR"))
+	redisClient := message.NewRedisClient(cfg.RedisAddr)
 	defer redisClient.Close()
 
-	db, err := sqlx.Open("postgres", os.Getenv("POSTGRES_URL"))
+	db, err := sqlx.Open("postgres", cfg.PostgresUrl)
 	if err != nil {
 		panic(err)
 	}

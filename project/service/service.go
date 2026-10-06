@@ -40,8 +40,13 @@ func New(
 
 	ticketsRepo := db.NewTicketRepository(dbConn)
 	eventHandler := event.NewHandler(
-		spreadsheetsAPI, receiptsService, filesAPI, ticketsRepo,
+		spreadsheetsAPI,
+		receiptsService,
+		filesAPI,
+		ticketsRepo,
+		eventBus,
 	)
+
 	eventProcessConfig := event.NewProcessorConfig(redisClient, watermillLogger)
 	watermillRouter := message.NewWatermillRouter(
 		eventHandler,

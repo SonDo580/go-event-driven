@@ -2,7 +2,6 @@ package db_test
 
 import (
 	"context"
-	"os"
 	"sync"
 	"testing"
 
@@ -13,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"tickets/config"
 	ticketsDb "tickets/db"
 	"tickets/entities"
 )
@@ -23,7 +23,8 @@ var getDbOnce sync.Once
 func getDb() *sqlx.DB {
 	getDbOnce.Do(func() {
 		var err error
-		db, err = sqlx.Open("postgres", os.Getenv("POSTGRES_URL"))
+		cfg := config.Get()
+		db, err = sqlx.Open("postgres", cfg.PostgresUrl)
 		if err != nil {
 			panic(err)
 		}
@@ -57,7 +58,14 @@ func TestTicketsRepository_Add_idempotency(t *testing.T) {
 		tickets, err := repo.FindAll(ctx)
 		require.NoError(t, err)
 
-		assert.Equal(t, len(tickets), 1)
-		assert.Equal(t, tickets[0], ticketToAdd)
+		var matchedTickets []entities.Ticket
+		for _, ticket := range tickets {
+			if ticket.TicketID == ticketToAdd.TicketID {
+				matchedTickets = append(matchedTickets, ticket)
+			}
+		}
+
+		assert.Equal(t, len(matchedTickets), 1)
+		assert.Equal(t, matchedTickets[0], ticketToAdd)
 	}
 }
