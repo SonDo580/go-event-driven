@@ -24,7 +24,8 @@ const (
 )
 
 const (
-	HeaderCorrelationID = "Correlation-ID"
+	HeaderCorrelationID  = "Correlation-ID"
+	HeaderIdempotencyKey = "Idempotency-Key"
 )
 
 const (

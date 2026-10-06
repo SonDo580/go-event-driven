@@ -7,14 +7,24 @@ import (
 )
 
 type MessageHeader struct {
-	ID          string    `json:"id"`
-	PublishedAt time.Time `json:"published_at"`
+	ID             string    `json:"id"`
+	PublishedAt    time.Time `json:"published_at"`
+	IdempotencyKey string    `json:"idempotency_key"`
 }
 
 func NewMessageHeader() MessageHeader {
 	return MessageHeader{
-		ID:          watermill.NewUUID(),
-		PublishedAt: time.Now().UTC(),
+		ID:             watermill.NewUUID(),
+		PublishedAt:    time.Now().UTC(),
+		IdempotencyKey: watermill.NewUUID(),
+	}
+}
+
+func NewMessageHeaderWithIdempotencyKey(idempotencyKey string) MessageHeader {
+	return MessageHeader{
+		ID:             watermill.NewUUID(),
+		PublishedAt:    time.Now().UTC(),
+		IdempotencyKey: idempotencyKey,
 	}
 }
 

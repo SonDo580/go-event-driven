@@ -70,15 +70,20 @@ func TestComponent(t *testing.T) {
 		ticketsHttp.TicketsStatusRequest{
 			Tickets: []ticketsHttp.TicketStatusRequest{ticket},
 		},
+		watermill.NewUUID(),
 	)
 
 	assertReceiptForTicketIssued(t, receiptsService, ticket)
 	assertRowToSheetAdded(t, spreadsheetsAPI, ticket, constants.SheetTicketsToPrint)
 
 	ticket.Status = constants.TicketStatusCanceled
-	sendTicketStatus(t, ticketsHttp.TicketsStatusRequest{
-		Tickets: []ticketsHttp.TicketStatusRequest{ticket},
-	})
+	sendTicketStatus(
+		t,
+		ticketsHttp.TicketsStatusRequest{
+			Tickets: []ticketsHttp.TicketStatusRequest{ticket},
+		},
+		watermill.NewUUID(),
+	)
 
 	assertRowToSheetAdded(t, spreadsheetsAPI, ticket, constants.SheetTicketsToRefund)
 }
@@ -184,7 +189,11 @@ func assertReceiptForTicketIssued(
 	assert.Equal(t, ticket.Price.Currency, receipt.Price.Currency)
 }
 
-func sendTicketStatus(t *testing.T, req ticketsHttp.TicketsStatusRequest) {
+func sendTicketStatus(
+	t *testing.T,
+	req ticketsHttp.TicketsStatusRequest,
+	idempotencyKey string,
+) {
 	t.Helper()
 
 	payload, err := json.Marshal(req)
@@ -200,6 +209,7 @@ func sendTicketStatus(t *testing.T, req ticketsHttp.TicketsStatusRequest) {
 	require.NoError(t, err)
 
 	httpReq.Header.Set(constants.HeaderCorrelationID, correlationID)
+	httpReq.Header.Set(constants.HeaderIdempotencyKey, idempotencyKey)
 	httpReq.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(httpReq)

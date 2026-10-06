@@ -21,6 +21,11 @@ type TicketStatusRequest struct {
 }
 
 func (h Handler) PostTicketsStatus(c echo.Context) error {
+	idempotencyKey := c.Request().Header.Get(constants.HeaderIdempotencyKey)
+	if idempotencyKey == "" {
+		return c.NoContent(http.StatusBadRequest)
+	}
+
 	var request TicketsStatusRequest
 	err := c.Bind(&request)
 	if err != nil {
@@ -31,7 +36,7 @@ func (h Handler) PostTicketsStatus(c echo.Context) error {
 		switch ticket.Status {
 		case constants.TicketStatusConfirmed:
 			event := entities.TicketBookingConfirmed{
-				Header:        entities.NewMessageHeader(),
+				Header:        entities.NewMessageHeaderWithIdempotencyKey(idempotencyKey + ticket.TicketID),
 				TicketID:      ticket.TicketID,
 				CustomerEmail: ticket.CustomerEmail,
 				Price:         ticket.Price,
@@ -42,7 +47,7 @@ func (h Handler) PostTicketsStatus(c echo.Context) error {
 			}
 		case constants.TicketStatusCanceled:
 			event := entities.TicketBookingCanceled{
-				Header:        entities.NewMessageHeader(),
+				Header:        entities.NewMessageHeaderWithIdempotencyKey(idempotencyKey + ticket.TicketID),
 				TicketID:      ticket.TicketID,
 				CustomerEmail: ticket.CustomerEmail,
 				Price:         ticket.Price,
