@@ -2,6 +2,7 @@ package adapters
 
 import (
 	"context"
+	"fmt"
 	"sync"
 )
 
@@ -21,4 +22,20 @@ func (c *FileApiStub) UploadFile(ctx context.Context, fileID string, fileContent
 	c.files[fileID] = fileContent
 
 	return nil
+}
+
+func (c *FileApiStub) DownloadFile(ctx context.Context, fileID string) (string, error) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	if c.files == nil {
+		c.files = make(map[string]string)
+	}
+
+	fileContent, ok := c.files[fileID]
+	if !ok {
+		return "", fmt.Errorf("file %s not found", fileID)
+	}
+
+	return fileContent, nil
 }
