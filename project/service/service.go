@@ -33,12 +33,14 @@ func New(
 	receiptsService event.ReceiptsService,
 	filesAPI event.FilesAPI,
 ) Service {
+	ticketsRepo := db.NewTicketsRepository(dbConn)
+	showsRepo := db.NewShowsRepository(dbConn)
+
 	watermillLogger := watermill.NewSlogLogger(log.FromContext(context.Background()))
 
 	publisher := message.NewRedisPublisher(redisClient, watermillLogger)
 	eventBus := event.NewBus(publisher)
 
-	ticketsRepo := db.NewTicketRepository(dbConn)
 	eventHandler := event.NewHandler(
 		spreadsheetsAPI,
 		receiptsService,
@@ -54,7 +56,11 @@ func New(
 		watermillLogger,
 	)
 
-	echoRouter := ticketsHttp.NewHttpRouter(eventBus, ticketsRepo)
+	echoRouter := ticketsHttp.NewHttpRouter(
+		eventBus,
+		ticketsRepo,
+		showsRepo,
+	)
 
 	return Service{
 		db:              dbConn,

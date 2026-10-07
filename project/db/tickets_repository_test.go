@@ -40,7 +40,7 @@ func TestTicketsRepository_Add_idempotency(t *testing.T) {
 	err := ticketsDb.InitializeDBSchema(db)
 	require.NoError(t, err)
 
-	repo := ticketsDb.NewTicketRepository(db)
+	repo := ticketsDb.NewTicketsRepository(db)
 
 	ticketToAdd := entities.Ticket{
 		TicketID: watermill.NewUUID(),

@@ -12,7 +12,7 @@ type TicketsRepository struct {
 	db *sqlx.DB
 }
 
-func NewTicketRepository(db *sqlx.DB) TicketsRepository {
+func NewTicketsRepository(db *sqlx.DB) TicketsRepository {
 	if db == nil {
 		panic("db is nil")
 	}

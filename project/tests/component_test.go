@@ -151,7 +151,7 @@ func assertTicketStoredInRepository(
 	db *sqlx.DB,
 	ticket ticketsHttp.TicketStatusRequest,
 ) {
-	ticketRepo := ticketsDb.NewTicketRepository(db)
+	ticketRepo := ticketsDb.NewTicketsRepository(db)
 
 	assert.Eventually(
 		t,
