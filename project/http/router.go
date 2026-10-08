@@ -8,7 +8,12 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func NewHttpRouter(eventBus *cqrs.EventBus, ticketsRepo TicketsRepository, showsRepo ShowsRepository) *echo.Echo {
+func NewHttpRouter(
+	eventBus *cqrs.EventBus,
+	ticketsRepo TicketsRepository,
+	showsRepo ShowsRepository,
+	bookingsRepo BookingsRepository,
+) *echo.Echo {
 	e := libHttp.NewEcho()
 	// - 1 of the steps:
 	//   Register a middleware that checks 'Correlation-ID' header
@@ -16,9 +21,10 @@ func NewHttpRouter(eventBus *cqrs.EventBus, ticketsRepo TicketsRepository, shows
 	// - Usage: by CorrelationPublisherDecorator
 
 	handler := Handler{
-		eventBus:    eventBus,
-		ticketsRepo: ticketsRepo,
-		showsRepo:   showsRepo,
+		eventBus:     eventBus,
+		ticketsRepo:  ticketsRepo,
+		showsRepo:    showsRepo,
+		bookingsRepo: bookingsRepo,
 	}
 
 	e.GET("/health", func(c echo.Context) error {
@@ -30,6 +36,8 @@ func NewHttpRouter(eventBus *cqrs.EventBus, ticketsRepo TicketsRepository, shows
 	e.GET("/tickets", handler.GetTickets)
 
 	e.POST("/shows", handler.PostShows)
+
+	e.POST("/book-tickets", handler.PostBookings)
 
 	return e
 }

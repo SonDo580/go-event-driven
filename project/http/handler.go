@@ -15,8 +15,13 @@ type ShowsRepository interface {
 	Add(ctx context.Context, show entities.Show) error
 }
 
+type BookingsRepository interface {
+	Add(ctx context.Context, booking entities.Booking) error
+}
+
 type Handler struct {
-	eventBus    *cqrs.EventBus
-	ticketsRepo TicketsRepository
-	showsRepo   ShowsRepository
+	eventBus     *cqrs.EventBus
+	ticketsRepo  TicketsRepository
+	showsRepo    ShowsRepository
+	bookingsRepo BookingsRepository
 }
