@@ -6,6 +6,7 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill"
 	watermillSQL "github.com/ThreeDotsLabs/watermill-sql/v3/pkg/sql"
+	"github.com/ThreeDotsLabs/watermill/components/forwarder"
 	"github.com/ThreeDotsLabs/watermill/message"
 	_ "github.com/lib/pq"
 )
@@ -33,7 +34,12 @@ func PublishInTx(
 		return fmt.Errorf("failed to create outbox publisher: %w", err)
 	}
 
-	// TODO: your code goes here
+	publisher = forwarder.NewPublisher(
+		publisher,
+		forwarder.PublisherConfig{
+			ForwarderTopic: outboxTopic,
+		},
+	)
 
-	return nil
+	return publisher.Publish(topic, msg)
 }
