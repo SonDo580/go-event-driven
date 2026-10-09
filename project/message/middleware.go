@@ -44,7 +44,7 @@ func useMiddlewares(router *message.Router, watermillLogger watermill.LoggerAdap
 		return func(msg *message.Message) ([]*message.Message, error) {
 			logger := log.FromContext(msg.Context()).With(
 				"message_id", msg.UUID,
-				"payload", string(msg.Payload), // should only do if payload doesn't contain sensitive info
+				"payload", string(msg.Payload),
 				"metadata", msg.Metadata,
 				"handler", message.HandlerNameFromCtx(msg.Context()),
 			)

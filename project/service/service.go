@@ -18,6 +18,7 @@ import (
 	ticketsHttp "tickets/http"
 	"tickets/message"
 	"tickets/message/event"
+	"tickets/message/outbox"
 )
 
 type Service struct {
@@ -39,8 +40,10 @@ func New(
 
 	watermillLogger := watermill.NewSlogLogger(log.FromContext(context.Background()))
 
-	publisher := message.NewRedisPublisher(redisClient, watermillLogger)
-	eventBus := event.NewBus(publisher)
+	redisPub := message.NewRedisPublisher(redisClient, watermillLogger)
+	eventBus := event.NewBus(redisPub)
+
+	postgresSub := outbox.NewPostgresSubscriber(dbConn, watermillLogger)
 
 	eventHandler := event.NewHandler(
 		spreadsheetsAPI,
@@ -49,11 +52,12 @@ func New(
 		ticketsRepo,
 		eventBus,
 	)
-
 	eventProcessConfig := event.NewProcessorConfig(redisClient, watermillLogger)
 	watermillRouter := message.NewWatermillRouter(
-		eventHandler,
+		postgresSub,
+		redisPub,
 		eventProcessConfig,
+		eventHandler,
 		watermillLogger,
 	)
 
