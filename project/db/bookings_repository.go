@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"tickets/entities"
 	"tickets/message/event"
@@ -23,12 +24,46 @@ func NewBookingsRepository(db *sqlx.DB) BookingsRepository {
 	return BookingsRepository{db: db}
 }
 
+var ErrOverBooking = errors.New("overbooking")
+
 func (b BookingsRepository) Add(ctx context.Context, booking entities.Booking) (err error) {
 	return updateInTx(
 		ctx,
 		b.db,
-		sql.LevelRepeatableRead,
+		sql.LevelSerializable, // make sure no over booking happens
 		func(ctx context.Context, tx *sqlx.Tx) error {
+			var availableSeats int
+			err := tx.GetContext(ctx, &availableSeats,
+				`SELECT 
+					number_of_tickets 
+				FROM 
+					shows
+				WHERE 
+					show_id = $1`,
+				booking.ShowID,
+			)
+			if err != nil {
+				return fmt.Errorf("could not get available seats: %w", err)
+			}
+
+			var bookedSeats int
+			err = tx.GetContext(ctx, &bookedSeats,
+				`SELECT
+					COALESCE(SUM(number_of_tickets), 0) 
+				FROM 
+					bookings
+				WHERE 
+					show_id = $1`,
+				booking.ShowID,
+			)
+			if err != nil {
+				return fmt.Errorf("could not get booked seats: %w", err)
+			}
+
+			if bookedSeats+booking.NumberOfTickets > availableSeats {
+				return ErrOverBooking
+			}
+
 			_, err = tx.NamedExecContext(
 				ctx,
 				`INSERT INTO 

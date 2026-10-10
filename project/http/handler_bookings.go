@@ -1,8 +1,10 @@
 package http
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+	"tickets/db"
 	"tickets/entities"
 
 	"github.com/ThreeDotsLabs/watermill"
@@ -23,6 +25,10 @@ func (h Handler) PostBookings(c echo.Context) error {
 	booking.BookingID = watermill.NewUUID()
 
 	err = h.bookingsRepo.Add(c.Request().Context(), booking)
+	if errors.Is(err, db.ErrOverBooking) {
+		c.JSON(http.StatusBadRequest, "")
+	}
+
 	if err != nil {
 		return fmt.Errorf("failed to add booking: %w", err)
 	}

@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"tickets/message/outbox"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -37,6 +38,11 @@ func InitializeDBSchema(db *sqlx.DB) error {
 
 	if err != nil {
 		return fmt.Errorf("could not initialize DB schema: %w", err)
+	}
+
+	err = outbox.InitializeSchema(db)
+	if err != nil {
+		return fmt.Errorf("could not initialize outbox schema: %w", err)
 	}
 
 	return nil
