@@ -37,6 +37,7 @@ func main() {
 		panic(err)
 	}
 
+	deadNationAPI := adapters.NewDeadNationClient(apiClients)
 	spreadsheetsAPI := adapters.NewSpreadsheetsAPIClient(apiClients)
 	receiptsService := adapters.NewReceiptsServiceClient(apiClients)
 	filesAPI := adapters.NewFilesApiClient(apiClients)
@@ -53,6 +54,7 @@ func main() {
 	err = service.New(
 		db,
 		redisClient,
+		deadNationAPI,
 		spreadsheetsAPI,
 		receiptsService,
 		filesAPI,

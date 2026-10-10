@@ -30,6 +30,7 @@ type Service struct {
 func New(
 	dbConn *sqlx.DB,
 	redisClient *redis.Client,
+	deadNationAPI event.DeadNationAPI,
 	spreadsheetsAPI event.SpreadsheetsAPI,
 	receiptsService event.ReceiptsService,
 	filesAPI event.FilesAPI,
@@ -46,10 +47,12 @@ func New(
 	postgresSub := outbox.NewPostgresSubscriber(dbConn, watermillLogger)
 
 	eventHandler := event.NewHandler(
+		deadNationAPI,
 		spreadsheetsAPI,
 		receiptsService,
 		filesAPI,
 		ticketsRepo,
+		showsRepo,
 		eventBus,
 	)
 	eventProcessorConfig := event.NewProcessorConfig(redisClient, watermillLogger)

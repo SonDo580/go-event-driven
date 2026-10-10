@@ -1,7 +1,6 @@
 package message
 
 import (
-	"tickets/constants"
 	"tickets/message/event"
 	"tickets/message/outbox"
 
@@ -30,27 +29,31 @@ func NewWatermillRouter(
 
 	eventProcessor.AddHandlers(
 		cqrs.NewEventHandler(
-			constants.HandlerAppendToTracker,
+			"BookInDeadNation",
+			eventHandler.BookInDeadNation,
+		),
+		cqrs.NewEventHandler(
+			"AppendToTracker",
 			eventHandler.AppendToTracker,
 		),
 		cqrs.NewEventHandler(
-			constants.HandlerIssueReceipt,
+			"IssueReceipt",
 			eventHandler.IssueReceipt,
 		),
 		cqrs.NewEventHandler(
-			constants.HandlerPrintTicket,
+			"PrintTicket",
 			eventHandler.PrintTicket,
 		),
 		cqrs.NewEventHandler(
-			constants.HandlerStoreTicket,
+			"StoreTicket",
 			eventHandler.StoreTicket,
 		),
 		cqrs.NewEventHandler(
-			constants.HandlerCancelTicket,
+			"CancelTicket",
 			eventHandler.CancelTicket,
 		),
 		cqrs.NewEventHandler(
-			constants.HandlerRemoveCanceledTicket,
+			"RemoveCanceledTicket",
 			eventHandler.RemoveCanceledTicket,
 		),
 	)

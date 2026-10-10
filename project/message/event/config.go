@@ -1,8 +1,6 @@
 package event
 
 import (
-	"tickets/constants"
-
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-redisstream/pkg/redisstream"
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
@@ -22,7 +20,7 @@ func NewProcessorConfig(
 		SubscriberConstructor: func(params cqrs.EventProcessorSubscriberConstructorParams) (message.Subscriber, error) {
 			return redisstream.NewSubscriber(redisstream.SubscriberConfig{
 				Client:        redisClient,
-				ConsumerGroup: constants.SvcTickets + "." + params.HandlerName,
+				ConsumerGroup: "svc_tickets" + "." + params.HandlerName,
 			}, watermillLogger)
 		},
 		GenerateSubscribeTopic: func(params cqrs.EventProcessorGenerateSubscribeTopicParams) (string, error) {
