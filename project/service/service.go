@@ -52,11 +52,11 @@ func New(
 		ticketsRepo,
 		eventBus,
 	)
-	eventProcessConfig := event.NewProcessorConfig(redisClient, watermillLogger)
+	eventProcessorConfig := event.NewProcessorConfig(redisClient, watermillLogger)
 	watermillRouter := message.NewWatermillRouter(
 		postgresSub,
 		redisPub,
-		eventProcessConfig,
+		eventProcessorConfig,
 		eventHandler,
 		watermillLogger,
 	)

@@ -13,7 +13,7 @@ import (
 func NewWatermillRouter(
 	postgresSub message.Subscriber,
 	publisher message.Publisher,
-	eventProcessConfig cqrs.EventProcessorConfig,
+	eventProcessorConfig cqrs.EventProcessorConfig,
 	eventHandler event.Handler,
 	watermillLogger watermill.LoggerAdapter,
 ) *message.Router {
@@ -23,7 +23,7 @@ func NewWatermillRouter(
 
 	outbox.AddForwarderHandler(postgresSub, publisher, router, watermillLogger)
 
-	eventProcessor, err := cqrs.NewEventProcessorWithConfig(router, eventProcessConfig)
+	eventProcessor, err := cqrs.NewEventProcessorWithConfig(router, eventProcessorConfig)
 	if err != nil {
 		panic(err)
 	}
