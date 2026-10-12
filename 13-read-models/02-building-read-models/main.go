@@ -48,11 +48,13 @@ type InvoiceReadModel struct {
 
 type InvoiceReadModelStorage struct {
 	invoices map[string]InvoiceReadModel
+	payments map[string]bool
 }
 
 func NewInvoiceReadModelStorage() *InvoiceReadModelStorage {
 	return &InvoiceReadModelStorage{
 		invoices: make(map[string]InvoiceReadModel),
+		payments: make(map[string]bool),
 	}
 }
 
@@ -70,18 +72,50 @@ func (s *InvoiceReadModelStorage) InvoiceByID(id string) (InvoiceReadModel, bool
 }
 
 func (s *InvoiceReadModelStorage) OnInvoiceIssued(ctx context.Context, event *InvoiceIssued) error {
-	// TODO: implement
-	return fmt.Errorf("not implemented")
+	_, ok := s.invoices[event.InvoiceID]
+	if !ok {
+		s.invoices[event.InvoiceID] = InvoiceReadModel{
+			InvoiceID:    event.InvoiceID,
+			CustomerName: event.CustomerName,
+			Amount:       event.Amount,
+			IssuedAt:     event.IssuedAt,
+		}
+	}
+	return nil
 }
 
 func (s *InvoiceReadModelStorage) OnInvoicePaymentReceived(ctx context.Context, event *InvoicePaymentReceived) error {
-	// TODO: implement
-	return fmt.Errorf("not implemented")
+	invoice, ok := s.invoices[event.InvoiceID]
+	if !ok {
+		return fmt.Errorf("invoice not found")
+	}
+
+	_, ok = s.payments[event.PaymentID]
+	if ok { // processed
+		return nil
+	}
+	s.payments[event.PaymentID] = true
+
+	invoice.FullyPaid = event.FullyPaid
+	invoice.PaidAmount = invoice.PaidAmount.Add(event.PaidAmount)
+	invoice.LastPaymentAt = event.PaidAt
+
+	s.invoices[event.InvoiceID] = invoice
+
+	return nil
 }
 
 func (s *InvoiceReadModelStorage) OnInvoiceVoided(ctx context.Context, event *InvoiceVoided) error {
-	// TODO: implement
-	return fmt.Errorf("not implemented")
+	invoice, ok := s.invoices[event.InvoiceID]
+	if !ok {
+		return fmt.Errorf("invoice not found")
+	}
+
+	invoice.Voided = true
+	invoice.VoidedAt = event.VoidedAt
+
+	s.invoices[event.InvoiceID] = invoice
+	return nil
 }
 
 func NewRouter(storage *InvoiceReadModelStorage, eventProcessorConfig cqrs.EventProcessorConfig, watermillLogger watermill.LoggerAdapter) (*message.Router, error) {
@@ -89,11 +123,22 @@ func NewRouter(storage *InvoiceReadModelStorage, eventProcessorConfig cqrs.Event
 
 	eventProcessor, err := cqrs.NewEventProcessorWithConfig(router, eventProcessorConfig)
 	if err != nil {
-		return nil, fmt.Errorf("could not create command processor: %w", err)
+		return nil, fmt.Errorf("could not create event processor: %w", err)
 	}
 
 	err = eventProcessor.AddHandlers(
-	// TODO: add event handlers
+		cqrs.NewEventHandler(
+			"OnInvoiceIssued",
+			storage.OnInvoiceIssued,
+		),
+		cqrs.NewEventHandler(
+			"OnInvoicePaymentReceived",
+			storage.OnInvoicePaymentReceived,
+		),
+		cqrs.NewEventHandler(
+			"OnInvoiceVoided",
+			storage.OnInvoiceVoided,
+		),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("could not add event handlers: %w", err)
