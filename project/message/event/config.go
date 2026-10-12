@@ -20,11 +20,11 @@ func NewProcessorConfig(
 		SubscriberConstructor: func(params cqrs.EventProcessorSubscriberConstructorParams) (message.Subscriber, error) {
 			return redisstream.NewSubscriber(redisstream.SubscriberConfig{
 				Client:        redisClient,
-				ConsumerGroup: "svc_tickets" + "." + params.HandlerName,
+				ConsumerGroup: "svc_tickets.events." + params.HandlerName,
 			}, watermillLogger)
 		},
 		GenerateSubscribeTopic: func(params cqrs.EventProcessorGenerateSubscribeTopicParams) (string, error) {
-			return params.EventName, nil
+			return "events." + params.EventName, nil
 		},
 		Marshaler: marshaler,
 		Logger:    watermillLogger,

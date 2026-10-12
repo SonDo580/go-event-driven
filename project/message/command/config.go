@@ -15,7 +15,7 @@ var marshaler = cqrs.JSONMarshaler{
 func NewBusConfig(logger watermill.LoggerAdapter) cqrs.CommandBusConfig {
 	return cqrs.CommandBusConfig{
 		GeneratePublishTopic: func(params cqrs.CommandBusGeneratePublishTopicParams) (string, error) {
-			return params.CommandName, nil
+			return "commands." + params.CommandName, nil
 		},
 		Marshaler: marshaler,
 		Logger:    logger,
@@ -30,11 +30,11 @@ func NewProcessorConfig(
 		SubscriberConstructor: func(params cqrs.CommandProcessorSubscriberConstructorParams) (message.Subscriber, error) {
 			return redisstream.NewSubscriber(redisstream.SubscriberConfig{
 				Client:        redisClient,
-				ConsumerGroup: "svc_tickets" + "." + params.HandlerName,
+				ConsumerGroup: "svc_tickets.commands." + params.HandlerName,
 			}, watermillLogger)
 		},
 		GenerateSubscribeTopic: func(params cqrs.CommandProcessorGenerateSubscribeTopicParams) (string, error) {
-			return params.CommandName, nil
+			return "commands." + params.CommandName, nil
 		},
 		Marshaler: marshaler,
 		Logger:    watermillLogger,
