@@ -5,3 +5,9 @@ type IssueReceiptRequest struct {
 	Price          Money  `json:"price"`
 	IdempotencyKey string `json:"idempotency_key"`
 }
+
+type VoidReceipt struct {
+	TicketID       string
+	Reason         string
+	IdempotencyKey string
+}

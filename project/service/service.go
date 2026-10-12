@@ -28,12 +28,17 @@ type Service struct {
 	watermillRouter *watermillMessage.Router
 }
 
+type ReceiptsService interface {
+	event.ReceiptsService
+	command.ReceiptsService
+}
+
 func New(
 	dbConn *sqlx.DB,
 	redisClient *redis.Client,
 	deadNationAPI event.DeadNationAPI,
 	spreadsheetsAPI event.SpreadsheetsAPI,
-	receiptsService event.ReceiptsService,
+	receiptsService ReceiptsService,
 	filesAPI event.FilesAPI,
 ) Service {
 	ticketsRepo := db.NewTicketsRepository(dbConn)
@@ -43,6 +48,7 @@ func New(
 	watermillLogger := watermill.NewSlogLogger(log.FromContext(context.Background()))
 
 	redisPub := message.NewRedisPublisher(redisClient, watermillLogger)
+
 	eventBus := event.NewBus(redisPub)
 	commandBus := command.NewBus(redisPub, command.NewBusConfig(watermillLogger))
 
@@ -58,11 +64,17 @@ func New(
 		eventBus,
 	)
 	eventProcessorConfig := event.NewProcessorConfig(redisClient, watermillLogger)
+
+	commandHandler := command.NewHandler(receiptsService)
+	commandProcessorConfig := command.NewProcessorConfig(redisClient, watermillLogger)
+
 	watermillRouter := message.NewWatermillRouter(
 		postgresSub,
 		redisPub,
 		eventProcessorConfig,
 		eventHandler,
+		commandProcessorConfig,
+		commandHandler,
 		watermillLogger,
 	)
 
