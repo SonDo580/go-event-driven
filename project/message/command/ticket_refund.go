@@ -12,7 +12,7 @@ func (h Handler) RefundTicket(ctx context.Context, cmd *entities.RefundTicket) e
 		return fmt.Errorf("idempotency key is required")
 	}
 
-	return h.receiptsService.VoidReceipt(
+	err := h.receiptsService.VoidReceipt(
 		ctx,
 		entities.VoidReceipt{
 			TicketID:       cmd.TicketID,
@@ -20,4 +20,21 @@ func (h Handler) RefundTicket(ctx context.Context, cmd *entities.RefundTicket) e
 			IdempotencyKey: idempotencyKey,
 		},
 	)
+	if err != nil {
+		return fmt.Errorf("failed to void receipt: %w", err)
+	}
+
+	err = h.paymentsService.RefundPayment(
+		ctx,
+		entities.PaymentRefund{
+			TicketID:       cmd.TicketID,
+			RefundReason:   "ticket refunded",
+			IdempotencyKey: idempotencyKey,
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to refund payment: %w", err)
+	}
+
+	return nil
 }

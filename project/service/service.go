@@ -40,6 +40,7 @@ func New(
 	spreadsheetsAPI event.SpreadsheetsAPI,
 	receiptsService ReceiptsService,
 	filesAPI event.FilesAPI,
+	paymentsService command.PaymentsService,
 ) Service {
 	ticketsRepo := db.NewTicketsRepository(dbConn)
 	showsRepo := db.NewShowsRepository(dbConn)
@@ -65,7 +66,7 @@ func New(
 	)
 	eventProcessorConfig := event.NewProcessorConfig(redisClient, watermillLogger)
 
-	commandHandler := command.NewHandler(receiptsService)
+	commandHandler := command.NewHandler(receiptsService, paymentsService)
 	commandProcessorConfig := command.NewProcessorConfig(redisClient, watermillLogger)
 
 	watermillRouter := message.NewWatermillRouter(

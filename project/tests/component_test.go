@@ -42,6 +42,7 @@ func TestComponent(t *testing.T) {
 	spreadsheetsAPI := &adapters.SpreadsheetsAPIStub{}
 	receiptsService := &adapters.ReceiptsServiceStub{}
 	filesAPI := &adapters.FileApiStub{}
+	paymentService := &adapters.PaymentsServiceStub{}
 
 	go func() {
 		svc := service.New(
@@ -51,6 +52,7 @@ func TestComponent(t *testing.T) {
 			spreadsheetsAPI,
 			receiptsService,
 			filesAPI,
+			paymentService,
 		)
 
 		err := svc.Run(ctx)
