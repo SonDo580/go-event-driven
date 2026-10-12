@@ -2,6 +2,7 @@ package event
 
 import (
 	"context"
+	"fmt"
 	"tickets/entities"
 
 	"github.com/ThreeDotsLabs/go-event-driven/v2/common/log"
@@ -16,5 +17,17 @@ func (h Handler) IssueReceipt(ctx context.Context, event *entities.TicketBooking
 		Price:          event.Price,
 	}
 
-	return h.receiptsService.IssueReceipt(ctx, request)
+	resp, err := h.receiptsService.IssueReceipt(ctx, request)
+	if err != nil {
+		return fmt.Errorf("failed to issue receipt: %w", err)
+	}
+
+	newEvent := entities.TicketReceiptIssued{
+		Header:        entities.NewMessageHeaderWithIdempotencyKey(event.Header.IdempotencyKey),
+		TicketID:      event.TicketID,
+		ReceiptNumber: resp.ReceiptNumber,
+		IssuedAt:      resp.IssuedAt,
+	}
+
+	return h.eventBus.Publish(ctx, newEvent)
 }

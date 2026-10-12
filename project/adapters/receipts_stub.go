@@ -12,7 +12,7 @@ type ReceiptsServiceStub struct {
 	VoidedReceipts []entities.VoidReceipt
 }
 
-func (c *ReceiptsServiceStub) IssueReceipt(ctx context.Context, request entities.IssueReceiptRequest) error {
+func (c *ReceiptsServiceStub) IssueReceipt(ctx context.Context, request entities.IssueReceiptRequest) (entities.IssueReceiptResponse, error) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
@@ -21,7 +21,7 @@ func (c *ReceiptsServiceStub) IssueReceipt(ctx context.Context, request entities
 	}
 
 	c.IssuedReceipts[request.IdempotencyKey] = request
-	return nil
+	return entities.IssueReceiptResponse{}, nil
 }
 
 func (c *ReceiptsServiceStub) VoidReceipt(ctx context.Context, request entities.VoidReceipt) error {

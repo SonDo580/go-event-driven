@@ -12,7 +12,7 @@ type SpreadsheetsAPI interface {
 }
 
 type ReceiptsService interface {
-	IssueReceipt(ctx context.Context, request entities.IssueReceiptRequest) error
+	IssueReceipt(ctx context.Context, request entities.IssueReceiptRequest) (entities.IssueReceiptResponse, error)
 }
 
 type FilesAPI interface {
