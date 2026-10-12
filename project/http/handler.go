@@ -21,6 +21,7 @@ type BookingsRepository interface {
 
 type Handler struct {
 	eventBus     *cqrs.EventBus
+	commandBus   *cqrs.CommandBus
 	ticketsRepo  TicketsRepository
 	showsRepo    ShowsRepository
 	bookingsRepo BookingsRepository
