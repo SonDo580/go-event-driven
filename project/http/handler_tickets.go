@@ -78,12 +78,12 @@ func (h Handler) GetTickets(c echo.Context) error {
 
 func (h Handler) PutTicketRefund(c echo.Context) error {
 	ticketID := c.Param("ticket_id")
+	idempotencyKey := uuid.NewString()
 
 	cmd := entities.RefundTicket{
-		Header:   entities.NewMessageHeaderWithIdempotencyKey(uuid.NewString()),
+		Header:   entities.NewMessageHeaderWithIdempotencyKey(idempotencyKey),
 		TicketID: ticketID,
 	}
-
 	if err := h.commandBus.Send(c.Request().Context(), cmd); err != nil {
 		return fmt.Errorf("failed to send RefundTicket command: %w", err)
 	}

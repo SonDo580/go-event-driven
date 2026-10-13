@@ -66,7 +66,7 @@ func New(
 	)
 	eventProcessorConfig := event.NewProcessorConfig(redisClient, watermillLogger)
 
-	commandHandler := command.NewHandler(receiptsService, paymentsService)
+	commandHandler := command.NewHandler(receiptsService, paymentsService, eventBus)
 	commandProcessorConfig := command.NewProcessorConfig(redisClient, watermillLogger)
 
 	watermillRouter := message.NewWatermillRouter(
