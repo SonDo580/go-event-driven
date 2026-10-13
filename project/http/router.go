@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+	"tickets/db"
 
 	libHttp "github.com/ThreeDotsLabs/go-event-driven/v2/common/http"
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
@@ -14,6 +15,7 @@ func NewHttpRouter(
 	ticketsRepo TicketsRepository,
 	showsRepo ShowsRepository,
 	bookingsRepo BookingsRepository,
+	opsBookingReadModel db.OpsBookingReadModel,
 ) *echo.Echo {
 	e := libHttp.NewEcho()
 	// - 1 of the steps:
@@ -22,11 +24,12 @@ func NewHttpRouter(
 	// - Usage: by CorrelationPublisherDecorator
 
 	handler := Handler{
-		eventBus:     eventBus,
-		commandBus:   commandBus,
-		ticketsRepo:  ticketsRepo,
-		showsRepo:    showsRepo,
-		bookingsRepo: bookingsRepo,
+		eventBus:            eventBus,
+		commandBus:          commandBus,
+		ticketsRepo:         ticketsRepo,
+		showsRepo:           showsRepo,
+		bookingsRepo:        bookingsRepo,
+		opsBookingReadModel: opsBookingReadModel,
 	}
 
 	e.GET("/health", func(c echo.Context) error {
@@ -38,6 +41,8 @@ func NewHttpRouter(
 	e.PUT("/ticket-refund/:ticket_id", handler.PutTicketRefund)
 
 	e.POST("/book-tickets", handler.PostBookings)
+	e.GET("/ops/bookings", handler.GetBookings)
+	e.GET("/ops/bookings/:id", handler.GetBookingByID)
 
 	e.POST("/shows", handler.PostShows)
 

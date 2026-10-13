@@ -102,6 +102,41 @@ func (r OpsBookingReadModel) OnTicketRefunded(ctx context.Context, event *entiti
 	)
 }
 
+func (r OpsBookingReadModel) AllBookings(ctx context.Context) ([]entities.OpsBooking, error) {
+	query := `SELECT payload FROM read_model_ops_bookings`
+
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var result []entities.OpsBooking
+	for rows.Next() {
+		var payload []byte
+		if err := rows.Scan(&payload); err != nil {
+			return nil, err
+		}
+
+		var reservation entities.OpsBooking
+		if err := json.Unmarshal(payload, &reservation); err != nil {
+			return nil, err
+		}
+
+		result = append(result, reservation)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (r OpsBookingReadModel) ReservationReadModel(ctx context.Context, bookingID string) (entities.OpsBooking, error) {
+	return r.findReadModelByBookingID(ctx, bookingID, r.db)
+}
+
 type dbExecutor interface {
 	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
 	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)

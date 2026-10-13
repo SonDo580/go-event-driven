@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"tickets/db"
 	"tickets/entities"
 
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
@@ -20,9 +21,10 @@ type BookingsRepository interface {
 }
 
 type Handler struct {
-	eventBus     *cqrs.EventBus
-	commandBus   *cqrs.CommandBus
-	ticketsRepo  TicketsRepository
-	showsRepo    ShowsRepository
-	bookingsRepo BookingsRepository
+	eventBus            *cqrs.EventBus
+	commandBus          *cqrs.CommandBus
+	ticketsRepo         TicketsRepository
+	showsRepo           ShowsRepository
+	bookingsRepo        BookingsRepository
+	opsBookingReadModel db.OpsBookingReadModel
 }
