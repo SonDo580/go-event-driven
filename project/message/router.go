@@ -1,6 +1,7 @@
 package message
 
 import (
+	"tickets/db"
 	"tickets/message/command"
 	"tickets/message/event"
 	"tickets/message/outbox"
@@ -17,6 +18,7 @@ func NewWatermillRouter(
 	eventHandler event.Handler,
 	commandProcessorConfig cqrs.CommandProcessorConfig,
 	commandHandler command.Handler,
+	opsBookingReadModel db.OpsBookingReadModel,
 	watermillLogger watermill.LoggerAdapter,
 ) *message.Router {
 	router := message.NewDefaultRouter(watermillLogger)
@@ -58,6 +60,27 @@ func NewWatermillRouter(
 		cqrs.NewEventHandler(
 			"RemoveCanceledTicket",
 			eventHandler.RemoveCanceledTicket,
+		),
+
+		cqrs.NewEventHandler(
+			"opsBookingReadModel.OnBookingMade",
+			opsBookingReadModel.OnBookingMade,
+		),
+		cqrs.NewEventHandler(
+			"opsBookingReadModel.OnTicketBookingConfirmed",
+			opsBookingReadModel.OnTicketBookingConfirmed,
+		),
+		cqrs.NewEventHandler(
+			"opsBookingReadModel.OnTicketReceiptIssued",
+			opsBookingReadModel.OnTicketReceiptIssued,
+		),
+		cqrs.NewEventHandler(
+			"opsBookingReadModel.OnTicketPrinted",
+			opsBookingReadModel.OnTicketPrinted,
+		),
+		cqrs.NewEventHandler(
+			"opsBookingReadModel.OnTicketRefunded",
+			opsBookingReadModel.OnTicketRefunded,
 		),
 	)
 

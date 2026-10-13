@@ -1,6 +1,6 @@
 module tickets
 
-go 1.24
+go 1.27
 
 require (
 	github.com/ThreeDotsLabs/go-event-driven/v2 v2.0.0

@@ -34,6 +34,10 @@ func InitializeDBSchema(db *sqlx.DB) error {
 			FOREIGN KEY (show_id) REFERENCES shows(show_id)
 		);
 
+		CREATE TABLE IF NOT EXISTS read_model_ops_bookings (
+			booking_id UUID PRIMARY KEY,
+			payload JSONB NOT NULL
+		);
 	`)
 
 	if err != nil {
