@@ -41,6 +41,7 @@ func NewHttpRouter(
 	e.PUT("/ticket-refund/:ticket_id", handler.PutTicketRefund)
 
 	e.POST("/book-tickets", handler.PostBookings)
+
 	e.GET("/ops/bookings", handler.GetBookings)
 	e.GET("/ops/bookings/:id", handler.GetBookingByID)
 

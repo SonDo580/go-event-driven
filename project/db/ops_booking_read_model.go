@@ -102,10 +102,31 @@ func (r OpsBookingReadModel) OnTicketRefunded(ctx context.Context, event *entiti
 	)
 }
 
-func (r OpsBookingReadModel) AllBookings(ctx context.Context) ([]entities.OpsBooking, error) {
-	query := `SELECT payload FROM read_model_ops_bookings`
+func (r OpsBookingReadModel) AllBookings(ctx context.Context, receiptIssueDate string) ([]entities.OpsBooking, error) {
+	var rows *sql.Rows
+	var err error
 
-	rows, err := r.db.QueryContext(ctx, query)
+	if receiptIssueDate != "" {
+		rows, err = r.db.QueryContext(
+			ctx,
+			`
+				SELECT payload FROM read_model_ops_bookings
+				WHERE booking_id IN (
+					SELECT booking_id FROM (
+						SELECT 
+							booking_id, 
+							DATE(jsonb_path_query(payload, '$.tickets.*.receipt_issued_at')::text) AS receipt_issued_at 
+						FROM read_model_ops_bookings
+					) 
+					WHERE receipt_issued_at = $1
+				)
+			`,
+			receiptIssueDate,
+		)
+	} else {
+		rows, err = r.db.QueryContext(ctx, `SELECT payload FROM read_model_ops_bookings`)
+	}
+
 	if err != nil {
 		return nil, err
 	}

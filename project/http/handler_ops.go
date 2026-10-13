@@ -8,7 +8,10 @@ import (
 )
 
 func (h Handler) GetBookings(c echo.Context) error {
-	bookings, err := h.opsBookingReadModel.AllBookings(c.Request().Context())
+	bookings, err := h.opsBookingReadModel.AllBookings(
+		c.Request().Context(),
+		c.QueryParam("receipt_issue_date"),
+	)
 	if err != nil {
 		return fmt.Errorf("failed to get all reservations: %w", err)
 	}
