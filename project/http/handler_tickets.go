@@ -19,6 +19,7 @@ type TicketStatusRequest struct {
 	Status        string         `json:"status"`
 	Price         entities.Money `json:"price"`
 	CustomerEmail string         `json:"customer_email"`
+	BookingID     string         `json:"booking_id"`
 }
 
 func (h Handler) PostTicketsStatus(c echo.Context) error {
@@ -38,6 +39,7 @@ func (h Handler) PostTicketsStatus(c echo.Context) error {
 		case constants.TicketStatusConfirmed:
 			event := entities.TicketBookingConfirmed{
 				Header:        entities.NewMessageHeaderWithIdempotencyKey(idempotencyKey + ticket.TicketID),
+				BookingID:     ticket.BookingID,
 				TicketID:      ticket.TicketID,
 				CustomerEmail: ticket.CustomerEmail,
 				Price:         ticket.Price,

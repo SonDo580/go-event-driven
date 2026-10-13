@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
@@ -62,13 +63,14 @@ func TestComponent(t *testing.T) {
 	waitForHttpServer(t)
 
 	ticket := ticketsHttp.TicketStatusRequest{
-		TicketID: watermill.NewUUID(),
+		TicketID: uuid.NewString(),
 		Status:   constants.TicketStatusConfirmed,
 		Price: entities.Money{
 			Amount:   "10.50",
 			Currency: "USD",
 		},
 		CustomerEmail: "x@x.com",
+		BookingID:     uuid.NewString(),
 	}
 
 	idempotencyKey := watermill.NewUUID()
