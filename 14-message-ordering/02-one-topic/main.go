@@ -36,7 +36,20 @@ func main() {
 	eventProcessor, err := cqrs.NewEventGroupProcessorWithConfig(
 		router,
 		cqrs.EventGroupProcessorConfig{
-			// TODO
+			GenerateSubscribeTopic: func(params cqrs.EventGroupProcessorGenerateSubscribeTopicParams) (string, error) {
+				return "events", nil
+			},
+			SubscriberConstructor: func(params cqrs.EventGroupProcessorSubscriberConstructorParams) (message.Subscriber, error) {
+				return kafka.NewSubscriber(kafka.SubscriberConfig{
+					Brokers:               []string{kafkaAddr},
+					Unmarshaler:           kafka.DefaultMarshaler{},
+					ConsumerGroup:         params.EventGroupName, // use handler group name as consumer group
+					OverwriteSaramaConfig: newConfig(),
+				}, logger)
+			},
+			AckOnUnknownEvent: true,
+			Marshaler:         cqrs.JSONMarshaler{},
+			Logger:            logger,
 		},
 	)
 	if err != nil {
@@ -69,8 +82,11 @@ func main() {
 		eventBus: eventBus,
 	}
 
-	// TODO
-	err = eventProcessor.AddHandlersGroup()
+	err = eventProcessor.AddHandlersGroup(
+		"players",
+		cqrs.NewGroupEventHandler(gameHandler.HandlePlayerJoined),
+		cqrs.NewGroupEventHandler(gameHandler.HandlePlayerLeft),
+	)
 	if err != nil {
 		panic(err)
 	}
