@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"sync"
 	"time"
@@ -26,8 +27,9 @@ type AlertResolved struct {
 }
 
 type AlertUpdated struct {
-	AlertID     string `json:"alert_id"`
-	IsTriggered bool   `json:"is_triggered"`
+	AlertID          string `json:"alert_id"`
+	IsTriggered      bool   `json:"is_triggered"`
+	LastAlertVersion int    `json:"last_alert_version"`
 }
 
 func main() {
@@ -96,6 +98,11 @@ func main() {
 			defer lock.Unlock()
 
 			alert, ok := alerts[event.AlertID]
+			if alert.LastAlertVersion+1 != event.AlertVersion {
+				logger.Info(fmt.Sprintf("Invalid version: %v (expected %v)", event.AlertVersion, alert.LastAlertVersion+1), nil)
+				return nil
+			}
+
 			if !ok {
 				alert = AlertUpdated{
 					AlertID: event.AlertID,
@@ -103,6 +110,7 @@ func main() {
 			}
 
 			alert.IsTriggered = true
+			alert.LastAlertVersion = event.AlertVersion
 			alerts[event.AlertID] = alert
 
 			return eventBus.Publish(ctx, alert)
@@ -112,6 +120,11 @@ func main() {
 			defer lock.Unlock()
 
 			alert, ok := alerts[event.AlertID]
+			if alert.LastAlertVersion+1 != event.AlertVersion {
+				logger.Info(fmt.Sprintf("Invalid version: %v (expected %v)", event.AlertVersion, alert.LastAlertVersion+1), nil)
+				return nil
+			}
+
 			if !ok {
 				alert = AlertUpdated{
 					AlertID: event.AlertID,
@@ -119,6 +132,7 @@ func main() {
 			}
 
 			alert.IsTriggered = false
+			alert.LastAlertVersion = event.AlertVersion
 			alerts[event.AlertID] = alert
 
 			return eventBus.Publish(ctx, alert)
