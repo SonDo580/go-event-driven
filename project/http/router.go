@@ -2,7 +2,6 @@ package http
 
 import (
 	"net/http"
-	"tickets/db"
 
 	libHttp "github.com/ThreeDotsLabs/go-event-driven/v2/common/http"
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
@@ -15,7 +14,7 @@ func NewHttpRouter(
 	ticketsRepo TicketsRepository,
 	showsRepo ShowsRepository,
 	bookingsRepo BookingsRepository,
-	opsBookingReadModel db.OpsBookingReadModel,
+	opsBookingReadModel OpsBookingReadModel,
 ) *echo.Echo {
 	e := libHttp.NewEcho()
 	// - 1 of the steps:

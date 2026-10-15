@@ -58,7 +58,7 @@ func (r OpsBookingReadModel) OnTicketBookingConfirmed(ctx context.Context, event
 			ticket.PriceAmount = event.Price.Amount
 			ticket.PriceCurrency = event.Price.Currency
 			ticket.CustomerEmail = event.CustomerEmail
-			ticket.Status = "confirmed"
+			ticket.ConfirmedAt = event.Header.PublishedAt
 
 			rm.Tickets[event.TicketID] = ticket
 
@@ -96,7 +96,7 @@ func (r OpsBookingReadModel) OnTicketRefunded(ctx context.Context, event *entiti
 		ctx,
 		event.TicketID,
 		func(rm entities.OpsTicket) (entities.OpsTicket, error) {
-			rm.Status = "refunded"
+			rm.RefundedAt = event.Header.PublishedAt
 			return rm, nil
 		},
 	)
@@ -117,7 +117,7 @@ func (r OpsBookingReadModel) AllBookings(ctx context.Context, receiptIssueDate s
 							booking_id, 
 							DATE(jsonb_path_query(payload, '$.tickets.*.receipt_issued_at')::text) AS receipt_issued_at 
 						FROM read_model_ops_bookings
-					) 
+					) bookings_within_date
 					WHERE receipt_issued_at = $1
 				)
 			`,

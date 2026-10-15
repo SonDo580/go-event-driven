@@ -15,11 +15,12 @@ type OpsBooking struct {
 }
 
 type OpsTicket struct {
-	PriceAmount   string `json:"price_amount"`   // from TicketBookingConfirmed event
-	PriceCurrency string `json:"price_currency"` // from TicketBookingConfirmed event
-	CustomerEmail string `json:"customer_email"` // from TicketBookingConfirmed event
+	PriceAmount   string    `json:"price_amount"`   // from TicketBookingConfirmed event
+	PriceCurrency string    `json:"price_currency"` // from TicketBookingConfirmed event
+	CustomerEmail string    `json:"customer_email"` // from TicketBookingConfirmed event
+	ConfirmedAt   time.Time `json:"confirmed_at"`   // from TicketBookingConfirmed event
 
-	Status string `json:"status"` // set to "confirmed" by TicketBookingConfirmed, "refunded" by TicketRefunded
+	RefundedAt time.Time `json:"refunded_at"` // from TicketRefunded event
 
 	PrintedAt       time.Time `json:"printed_at"`        // from TicketPrinted event
 	PrintedFileName string    `json:"printed_file_name"` // from TicketPrinted event

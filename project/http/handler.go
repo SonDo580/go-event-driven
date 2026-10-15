@@ -2,7 +2,6 @@ package http
 
 import (
 	"context"
-	"tickets/db"
 	"tickets/entities"
 
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
@@ -20,11 +19,16 @@ type BookingsRepository interface {
 	Add(ctx context.Context, booking entities.Booking) error
 }
 
+type OpsBookingReadModel interface {
+	AllBookings(ctx context.Context, receiptIssueDate string) ([]entities.OpsBooking, error)
+	ReservationReadModel(ctx context.Context, bookingID string) (entities.OpsBooking, error)
+}
+
 type Handler struct {
 	eventBus            *cqrs.EventBus
 	commandBus          *cqrs.CommandBus
 	ticketsRepo         TicketsRepository
 	showsRepo           ShowsRepository
 	bookingsRepo        BookingsRepository
-	opsBookingReadModel db.OpsBookingReadModel
+	opsBookingReadModel OpsBookingReadModel
 }
